@@ -1,4 +1,4 @@
-## ### Frequently Asked Questions (FAQ)
+## Frequently Asked Questions (FAQ)
 
 **Will development for OpenTX stop?**
 
