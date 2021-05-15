@@ -20,11 +20,11 @@ The EdgeTX releases will be tested and considered stable for everyday use. Howev
 
 **What features / changes will be included in EdgeTX that are not included in the latest OpenTX Release (version 2.3.11)?**
 
-The main focus for new features in this release are:
-Touch screen support based on the new color LCD UI.
-Model / Radio data storage being moved from binary to a more flexible format (YAML).
-A simple flasher to ease getting new firmware into radios.
-Several other small enhancements & fixes will be listed in detail in the release notes.
+* The main focus for new features in this release are:
+* Touch screen support based on the new color LCD UI.
+* Model / Radio data storage being moved from binary to a more flexible format (YAML).
+* A simple flasher to ease getting new firmware into radios.
+* Several other small enhancements & fixes will be listed in detail in the release notes.
 
 
 **Will I still be able to use OpenTX Companion to manage my models with EdgeTX?**
@@ -32,7 +32,19 @@ Several other small enhancements & fixes will be listed in detail in the release
 Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio. 
 
 **What radio-transmitters will be supported?**
-X9Lite, QX7, T12, TX12, T8, Tlite, XLite, X9DP, X9DP2019, X10, T16, TX16S, X12S.
-T18 is is planned, but not confirmed at this time.
+* X9Lite 
+* QX7
+* T12 
+* TX12
+* T8
+* Tlite
+* XLite
+* X9DP 
+* X9DP2019 
+* X10
+* T16
+* TX16S 
+* X12S
+* T18 - planned, but not confirmed at this time.
 Basically, everything that is supported in OTX 2.3, minus 9X / 9XR-pro.
 
