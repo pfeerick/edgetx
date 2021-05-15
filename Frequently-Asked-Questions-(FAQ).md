@@ -12,6 +12,12 @@ No, there are no plans to stop developing OpenTX. Below is a quote by Kilrah fro
 
 The planned release date is 21 June 2021.  However, if you want to try it out sooner or help with testing you are free to install one of the automated builds from the Github page. We will inform the community once the release candidate has been built.
 
+**Where can I download the EdgeTX firmware to test it out?**
+
+You can download the latest automated build from the actions artifacts on our Github Page here: [https://github.com/EdgeTX/edgetx/actions](https://github.com/EdgeTX/edgetx/actions) Please note that a github account is required.
+
+If you are not familiar with Github or do not have a Github account, you can also download the EdgeTX Firmware from our Google Drive account here:
+[EdgeTX Google Drive](https://drive.google.com/drive/folders/1vcmth59lCe7zaiSVox-AK3ZCOwle6g3M?usp=sharing). Detailed flashing instructions are also included here.
 
 **Will the EdgeTX releases be just beta releases for Open TX or will they be tested and stable for everyday use?**
 
