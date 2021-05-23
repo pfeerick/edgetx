@@ -52,5 +52,6 @@ Yes, you will still be able to manage your models with OpenTX Companion. The new
 * TX16S 
 * X12S
 * T18 - planned, but not confirmed at this time.
+
 Basically, everything that is supported in OTX 2.3, minus 9X / 9XR-pro.
 
