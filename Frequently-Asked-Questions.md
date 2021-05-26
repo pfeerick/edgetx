@@ -17,7 +17,7 @@ The planned release date is 21 June 2021.  However, if you want to try it out so
 You can download the latest automated build from the actions artifacts on our Github Page here: [https://github.com/EdgeTX/edgetx/actions](https://github.com/EdgeTX/edgetx/actions) Please note that a github account is required.
 
 If you are not familiar with Github or do not have a Github account, you can also download the EdgeTX Firmware from our Google Drive account here:
-[EdgeTX Google Drive](https://drive.google.com/drive/folders/1vcmth59lCe7zaiSVox-AK3ZCOwle6g3M?usp=sharing). Additionally, **detailed flashing instructions are also included in the Google drive link above.**
+[EdgeTX Google Drive](https://drive.google.com/drive/folders/1uS6iW78aN4y41_x4F1OfwilWxH_efs7B?usp=sharing). Additionally, **detailed flashing instructions are also included in the Google drive link above.**
 
 **Will the EdgeTX releases be just beta releases for Open TX or will they be tested and stable for everyday use?**
 
