@@ -13,15 +13,15 @@ _**Note 2: This method of downloading and installing the firmware will only be u
 <p align="center">
 <a href="url"><img src="https://github.com/EdgeTX/edgetx.github.io/blob/master/images/Picture1.png" align="center" height="320" width="602" ></a>
 
-2. Delete everything from your SD card and copy the contents of the folder corresponding to your radio type from the “edgetx-sdcard-master\sdcard” folder to your blank SD card.
+2. Delete everything from your SD card and copy the contents of the folder corresponding to your radio type from the “**edgetx-sdcard-master\sdcard**” folder to your blank SD card.
 <p align="center">
 <a href="url"><img src="https://github.com/EdgeTX/edgetx.github.io/blob/master/images/Picture2.png" align="center" height="181" width="602" ></a>
 
 _**Note: For more information about which folder to use for your radio, look at the readme page here: https://github.com/EdgeTX/edgetx-sdcard#readme**_
 
-3. If you want to have voice prompts from your radio, copy the “SOUNDS” folder from the “\edgetx-sdcard-master” folder to your SD card.
+3. If you want to have voice prompts from your radio, copy the “**SOUNDS**” folder from the “**\edgetx-sdcard-master**” folder to your SD card.
 
-4. Download the current EdgeTX Firmware.  You can download the most recent build directly from Github - https://github.com/EdgeTX/edgetx/actions (Github account required) or you can download the daily night-build directly from here: Firmware
+4. Download the current EdgeTX Firmware.  You can download the most recent build directly from Github - https://github.com/EdgeTX/edgetx/actions (Github account required) or you can download the daily night-build directly from here: [Firmware](https://drive.google.com/drive/folders/1vcmth59lCe7zaiSVox-AK3ZCOwle6g3M?usp=sharing)
 
 5. Unzip the file and save the correct .bin file (same name as your radio type) to your computer. 
 
