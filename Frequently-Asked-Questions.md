@@ -19,7 +19,7 @@ You can download the latest automated build from the actions artifacts on our Gi
 If you are not familiar with Github or do not have a Github account, you can also download the EdgeTX Firmware from our Google Drive account here:
 [EdgeTX Google Drive](https://drive.google.com/drive/folders/1uS6iW78aN4y41_x4F1OfwilWxH_efs7B?usp=sharing). 
 
-**How do I install the the EdgeTX firmware?**
+**How do I install EdgeTX firmware?**
 
 Detailed instructions for flashing the EdgeTX firmware (pre-release) can be found here: 
 [https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time](https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time)
