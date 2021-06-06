@@ -14,8 +14,8 @@ Keep in mind that this is a volunteer project and that the developers do not rec
 
 If you have ideas or changes that you would like to see implemented, please feel free to create a pull request in Github. If you do make a pull request, please keep track of its progress. That way, if developers have questions or comments, you can discuss it with them on Discord.
 
-With that out of the way, we are looking forward to meeting you on **[Discord!](https://discord.gg/wF9wUKnZ6H)**
-
+With that out of the way, we are looking forward to meeting you on **[Discord!](https://discord.gg/wF9wUKnZ6H)** - 
+[![Discord](https://img.shields.io/discord/839849772864503828.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/wF9wUKnZ6H)
 
 For further reference:
 
