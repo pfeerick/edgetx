@@ -14,10 +14,7 @@ The planned release date is 21 June 2021.  However, if you want to try it out so
 
 **Where can I download the EdgeTX firmware to test it out?**
 
-You can download the latest automated build from the actions artifacts on our Github Page here: [https://github.com/EdgeTX/edgetx/actions](https://github.com/EdgeTX/edgetx/actions) Please note that a github account is required.
-
-If you are not familiar with Github or do not have a Github account, you can also download the EdgeTX Firmware from our Google Drive account here:
-[EdgeTX Google Drive](https://drive.google.com/drive/folders/1uS6iW78aN4y41_x4F1OfwilWxH_efs7B?usp=sharing). 
+You can download the EdgeTX firmware flash utility here: https://github.com/EdgeTX/flasher/releases
 
 **How do I install EdgeTX firmware?**
 
@@ -40,7 +37,7 @@ The main focus for new features in this release are:
 
 **Will I still be able to use OpenTX Companion to manage my models with EdgeTX?**
 
-Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio. _**Please note- OpenTX Companion is currently NOT compatible with EdgeTX - we are working on that. If you decide to test EdgeTX right now, you will not be able to import your existing models and will have to create them new in EdgeTX.**_
+Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio. _**Please note- OpenTX Companion is currently NOT compatible with EdgeTX - we are working on that. However, you can import and convert your existing models to use with EdgeTX. See the [installation instructions](https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time) for more information.**_
 
 **What radio-transmitters will be supported?**
 * X9Lite 
