@@ -5,7 +5,7 @@
 As of 11.June.2021
 
 ### Warning: the EdgeTX firmware is still in a pre-release state and should only be used for testing purposes. It has not yet been thoroughly tested and may contain issues. Use at your own risk!
-_**Note 1: Before you update to EdgeTX, it is highly recommended that you backup your current firmware and SD card contents in case you need to roll back to your previous version for some reason.**_
+_**Note 1: Before you update to EdgeTX, it is highly recommended that you backup your current firmware and SD card contents in case you need to roll back to your previous version for some reason. Additionally, you will need your MODEL and RADIO folders if you want to convert your existing models created in OpenTX to work with EdgeTX.**_
 
 
 1. Download and extract the EdgeTX SD card content for your radio type to your computer. The SD card contents can be found here: https://github.com/EdgeTX/edgetx-sdcard/releases
@@ -23,8 +23,8 @@ _**Note: For more information about which folder to use for your radio, look at 
 6. Depending on your web browser, you may get a warning that the file type may be dangerous. If this occurs, select the option to save / keep the file 
    anyways (This warning is normal when downloading executable files). 
 
-7. Open the executable file that you downloaded. If using windows, you will get a warning, select “More Info” and “Run Anyway”. It will install the 
-   EdgeTX Flasher program and then open it (it may take a little while to install ~45s).
+7. Open the executable file that you downloaded. If using Microsoft Windows, you will get a warning, select “More Info” and “Run Anyway”. It will install 
+   the EdgeTX Flasher program and then open it (it may take a little while to install ~45s).
 
 8. Plug in your radio (radio power should be off).
 
