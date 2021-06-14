@@ -1,4 +1,4 @@
-# EdgeTX 2.4 Release Notes - Draft
+# -Draft-
 
 We are happy to bring you the first release of EdgeTX – the cutting edge open source firmware for your R/C radio. EdgeTX is a fork of OpenTX 2.3.11, so it contains all the current features of OTX2.3.11 as well and some additional features that were slated for OTX 2.3.12 including:
 * Add support for RadioMaster T8
