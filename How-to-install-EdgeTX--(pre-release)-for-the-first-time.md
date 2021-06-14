@@ -18,7 +18,7 @@ _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup
 
 2. Delete everything from your SD card and copy the contents of the unzipped folder to your blank SD card.
 
-> _**Note:**_ To import your models from OpenTX, copy your MODELS and RADIO folder from your OpenTX SD Card to your new EdgeTX SD Card.
+> _**Note:**_ To import your models from OpenTX, copy your MODELS and RADIO folders from your OpenTX SD Card to your new EdgeTX SD Card.
 
 3. Download the EdgeTX firmware flash utility: https://github.com/EdgeTX/flasher/releases
 
