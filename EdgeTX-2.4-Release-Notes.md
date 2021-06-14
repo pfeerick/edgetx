@@ -49,6 +49,12 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 * X12S
 * T18
 
+### Limitations:
+Please note the following limitations - at the time of release:
+* Users are not able to import model files from OpenTX Companion into to EdgeTX (Firmware flashing with OpenTC Companion is still possible)
+* Support for FlySky Nirvana NV14 is not available
+* Users are not able to select a theme or modify the default theme color scheme.
+
 ### Download Links:
 EdgeTX Flasher: [https://github.com/EdgeTX/flasher/releases](https://github.com/EdgeTX/flasher/releases)
 
