@@ -11,7 +11,7 @@ We are happy to bring you the first release of EdgeTX – the cutting edge open 
 * M-Link telemetry
 * Multi module config support
 * New Lua function getAvailableMemory
-* Improved sync ??of what??
+* Improved sync _**??of what??**_
 * R9M Flex support broken 2.3.12N495
 * Stop mixer scheduler when stopping module
 * Set correct channel count for Ghost modules
