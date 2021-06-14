@@ -2,7 +2,7 @@
 <a href="url"><img src="https://github.com/EdgeTX/edgetx.github.io/blob/master/images/edgetx-v2.png" align="center" height="150" width="150" ></a>
 
 # How to install EdgeTX for the first time (pre-release)
-As of 11.June.2021
+As of 14.June.2021
 
 ### Warning: the EdgeTX firmware is still in a pre-release state and should only be used for testing purposes. It may contain issues - Use at your own risk!
 _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup your current firmware and SD card contents in case you need to roll back to your previous version for some reason. Additionally, you will need your MODEL and RADIO folders if you want to convert your existing models created in OpenTX to work with EdgeTX.**_
