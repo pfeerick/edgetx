@@ -4,15 +4,21 @@
 # How to install EdgeTX for the first time (pre-release)
 As of 11.June.2021
 
-### Warning: the EdgeTX firmware is still in a pre-release state and should only be used for testing purposes. It has not yet been thoroughly tested and may contain issues. Use at your own risk!
+### Warning: the EdgeTX firmware is still in a pre-release state and should only be used for testing purposes. It may contain issues - Use at your own risk!
 _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup your current firmware and SD card contents in case you need to roll back to your previous version for some reason. Additionally, you will need your MODEL and RADIO folders if you want to convert your existing models created in OpenTX to work with EdgeTX.**_
 
 
 1. Download and extract the EdgeTX SD card content for your radio type to your computer. The SD card contents can be found here: https://github.com/EdgeTX/edgetx-sdcard/releases
 
-_**Note: For more information about which folder to use for your radio, look at the readme page here: https://github.com/EdgeTX/edgetx-sdcard#readme**_
+> The list below shows which .zip file to use for different radio types:
+> * **horus.zip** (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
+> * **nv14.zip** - FlySky Nirvana NV14
+> * **taranis-x7.zip** (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
+> * **taranis-x9.zip** (212x64 BW Screens) - X9D, X9D Plus, X9D Plus 2019
 
 2. Delete everything from your SD card and copy the contents of the unzipped folder to your blank SD card.
+
+> _**Note:**_ To import your models from OpenTX, copy your MODELS and RADIO folder from your OpenTX SD Card to your new EdgeTX SD Card.
 
 3. Download the EdgeTX firmware flash utility: https://github.com/EdgeTX/flasher/releases
 
@@ -38,23 +44,15 @@ _**Note: For more information about which folder to use for your radio, look at 
 
 13. Select “Write”.  You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close". 
 
-14. After the flashing is complete, restart your radio and you should be greeted with EdgeTX. When the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio and then you are ready to start testing EdgeTX!
+14. After the flashing is complete, restart your radio and you should be greeted with "Welcome to EdgeTX."
+ 
+> If you **did not** add the RADIO and MODELS folders to your SD card for conversion, when the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio. 
+
+> If you **did** add the RADIO and MODELS folders to your SD card for conversion you should see a message telling you that a SD conversion is necessary. Select the white circle and it will begin converting your models. Depending on your previous radio settings the calibration screen may appear, If so, Calibrate your radio.
+
+### You are ready to start using EdgeTX!
 
 _**Note 1: The radio software will default to mode 1 stick configuration. If you have a mode 2 radio, you will most likely see a “Throttle Warning”. To fix this, go into the radio settings and change to mode 2.**_
-
-## Importing models from OpenTX 2.3 to EdgeTX 2.4.
-
-1. After your radio has been successfully flashed to EdgeTX, copy the following files from your OTX2.3 SD Card to your EdgeTX2.4 Sd Card:
-
-     RADIO/radio.bin to RADIO/radio.bin
-
-     RADIO/models.txt to RADIO/models.txt
-
-     MODELS/* to MODELS/*
-
-     "*" = All model files
-
-2. After copying over the files, restart your radio and you should see a message telling you that a SD conversion is necessary. Select the white circle and it will begin converting your models. Once this is complete, you will be able to use your converted models in EdgeTX.
 
 
 
