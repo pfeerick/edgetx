@@ -22,7 +22,7 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 * Overhauled user interface to better support touchscreen use
 * Fix mixer scheduler 33Hz only issue
 * Remove legacy ZCHAR
-* Added support for MAVLink -**_(If we can get past copyright attribution issue)_**
+* Added support for MAVLink -**_(TBD)_**
 * Radios with internal GPS will display GPS icon and sat number in top bar
 * Added OneBit mode to HARDWARE menu in order fix inverter bug in x9D+ and X7
 * Raised maximum mixer scheduler period to 50ms (20Hz)
@@ -51,8 +51,8 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 
 ### Limitations:
 Please note the following limitations. At the time of release:
-* Users are not able to import model files from OpenTX Companion into to EdgeTX (Firmware flashing with OpenTC Companion is still possible)
-* Support for FlySky Nirvana NV14 is not available
+* Users are not able to import model files from OpenTX Companion into to EdgeTX (Firmware flashing with OpenTC Companion is still possible).
+* Support for FlySky Nirvana NV14 is not available.
 * Users are not able to select a theme or modify the default theme color scheme.
 
 ### Download Links:
