@@ -21,6 +21,8 @@ _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup
 
 > _**Note:**_ To import your models from OpenTX, copy your MODELS and RADIO folders from your OpenTX SD Card to your new EdgeTX SD Card.
 
+3. Download the desired sound pack (https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip and copy to the "Sounds" folder on your SD card. 
+
 3. Download the EdgeTX firmware flash utility: https://github.com/EdgeTX/flasher/releases
 
 4. Click the arrow to the left side of “Assets” to expand the menu.
