@@ -37,7 +37,7 @@ _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup
 
 9. Select “Flash” from the menu on the left side of the screen.
 
-10. Select “edgetx-firmware-2.4” from the option “Firmware Branch”
+10. Select “edgetx-firmware-v2.4.0rc2” from the option “Firmware Branch”
 
 11. Select the latest firmware for the “Firmware Version”
 
