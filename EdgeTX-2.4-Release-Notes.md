@@ -2,8 +2,7 @@
 
 We are happy to bring you the first release of EdgeTX – the cutting edge open source firmware for your R/C radio. EdgeTX is a fork of OpenTX 2.3.11, so it contains all the current features of OTX2.3.11 as well and some additional features that were slated for OTX 2.3.12 including:
 * Add support for RadioMaster T8
-* Multirotor Wizard for Color LCD radios
-* Add ETX1 and EXT1 to calibration screen
+* Add EXT1 and EXT2 to calibration screen
 * Add support for Jumper T-Lite
 * Fix multi per channel failsafe
 * Add telemetry sources for inputs
@@ -16,13 +15,11 @@ We are happy to bring you the first release of EdgeTX – the cutting edge open 
 * Stop mixer scheduler when stopping module
 * Set correct channel count for Ghost modules
 * Several other small fixes
-
 Additionally, EdgeTX adds the several other enhancements and new features:
-* Added touchscreen support for touchscreen equipped radios
+* Added touchscreen support for touchscreen equipped radios (including T18)
 * Overhauled user interface to better support touchscreen use
 * Fix mixer scheduler 33Hz only issue
 * Remove legacy ZCHAR
-* Added support for MAVLink -**_(TBD)_**
 * Radios with internal GPS will display GPS icon and sat number in top bar
 * Added OneBit mode to HARDWARE menu in order fix inverter bug in x9D+ and X7
 * Raised maximum mixer scheduler period to 50ms (20Hz)
@@ -41,6 +38,7 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 * T8
 * Tlite
 * XLite
+* X9D
 * X9DP
 * X9DP2019
 * X10
@@ -51,8 +49,9 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 
 ### Limitations:
 Please note the following limitations. At the time of release:
-* Users are not able to import model files from OpenTX Companion into to EdgeTX (Firmware flashing with OpenTC Companion is still possible).
-* Support for FlySky Nirvana NV14 is not available.
+* You are not (yet!) able to import or edit EdgeTX models using OpenTX Companion (but firmware flashing with OpenTX Companion is still possible). Your OpenTX models and settings will be automatically converted by EdgeTX, and changes to model and radio settings will need be done on the radio until the Companion software is updated to suit.
+* Panel / widget will not be preserved in the conversion from OTX 2.3.x => ETX 2.4.0 due to incompatibility in how the settings sere stored (OTX2.3 does not include the type of the options in the binary file). This should be a one-time issue.
+* Support for FlySky Nirvana NV14 is not yet available.
 * Users are not able to select a theme or modify the default theme color scheme.
 
 ### Download Links:
@@ -65,9 +64,7 @@ EdgeTX website - https://edge-tx.org/
 
 Installation Guide - https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time (_will update with new installation page link)_
 
-Installation Video: - _to be published_
-
-EdgeTX touch screen UI video – _to be published_
+Installation Video: - https://www.youtube.com/watch?v=Y9OvW9XCjOs
 
 Which SD Card Zip should I use? - [https://github.com/EdgeTX/edgetx-sdcard](https://github.com/EdgeTX/edgetx-sdcard)
 
@@ -78,7 +75,9 @@ Frequently Asked Questions - https://github.com/EdgeTX/edgetx.github.io/wiki/Fre
 Community Guidelines - https://github.com/EdgeTX/edgetx.github.io/wiki/Community-Guidlines
 
 ### Thanks:
-Special thanks to all those that contributed to making this release possible! Without the support and commitment from the development team and the community, this release would not have been possible.  We are looking forward to bringing you more of the things that you want in our next release on the 21st of September, 2021.
+Special thanks to all those that contributed to making this release possible! Without the support and commitment from the development team and the community, this release would not have been possible.
+Here are the top contributors to this release: **@raphaelcoeffic, @richardclli, @CoderElectronics, @olliw42, @pfeerick, @yaapu, @rotorman, @hydra, @MRC3742, @gretel, @eshifri, @norulers.**
+A big thanks goes also to the OpenTX team and previous developers, on which EdgeTX is based upon.
 
 ### Keep in touch!
 Discord - https://discord.gg/wF9wUKnZ6H
