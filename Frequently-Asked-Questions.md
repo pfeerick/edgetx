@@ -37,7 +37,7 @@ The main focus for new features in this release are:
 
 **Will I still be able to use OpenTX Companion to manage my models with EdgeTX?**
 
-Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio. _**Please note- OpenTX Companion is currently NOT compatible with EdgeTX - we are working on that. However, you can import and convert your existing models to use with EdgeTX. See the [installation instructions](https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time) for more information.**_
+Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio. _**Please note- OpenTX Companion is currently NOT compatible with EdgeTX - we are working on that. However, you can import and convert your existing models to use with EdgeTX. See the [installation guide](https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-Guide) for more information.**_
 
 **What radio-transmitters will be supported?**
 * X9Lite 
