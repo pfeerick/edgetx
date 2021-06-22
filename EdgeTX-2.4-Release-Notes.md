@@ -32,7 +32,7 @@ Additionally, EdgeTX adds the several other enhancements and new features:
 
 ### Supported radios
 * X9Lite
-* QX7
+* QX7 (non-Access)
 * T12
 * TX12
 * T8
