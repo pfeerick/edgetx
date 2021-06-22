@@ -62,7 +62,7 @@ EdgeTX SD Card: [https://github.com/EdgeTX/edgetx-sdcard/releases](https://githu
 ### References:
 EdgeTX website - https://edge-tx.org/
 
-Installation Guide - https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time (_will update with new installation page link)_
+Installation Guide - https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-Guide
 
 Installation Video: - https://www.youtube.com/watch?v=Y9OvW9XCjOs
 
