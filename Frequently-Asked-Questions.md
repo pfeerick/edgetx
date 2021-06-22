@@ -19,7 +19,7 @@ You can download the EdgeTX firmware flash utility here: https://github.com/Edge
 **How do I install EdgeTX firmware?**
 
 Detailed instructions for flashing the EdgeTX firmware (pre-release) can be found here: 
-[https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time](https://github.com/EdgeTX/edgetx.github.io/wiki/How-to-install-EdgeTX--(pre-release)-for-the-first-time)
+[https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-Guide](https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-Guide)
 
 **Will the EdgeTX releases be just beta releases for Open TX or will they be tested and stable for everyday use?**
 
@@ -41,7 +41,7 @@ Yes, you will still be able to manage your models with OpenTX Companion. The new
 
 **What radio-transmitters will be supported?**
 * X9Lite 
-* QX7
+* QX7 (non-Access)
 * T12 
 * TX12
 * T8
