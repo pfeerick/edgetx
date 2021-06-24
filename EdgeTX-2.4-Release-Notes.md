@@ -77,7 +77,7 @@ Community Guidelines - https://github.com/EdgeTX/edgetx.github.io/wiki/Community
 
 ### Thanks:
 Special thanks to all those that contributed to making this release possible! Without the support and commitment from the development team and the community, this release would not have been possible.
-Here are the top contributors to this release: **@raphaelcoeffic, @richardclli, @CoderElectronics, @olliw42, @pfeerick, @yaapu, @rotorman, @hydra, @MRC3742, @gretel, @eshifri, @norulers.**
+Here are the top contributors to this release: **@raphaelcoeffic, @richardclli, @CoderElectronics, @phileville, @olliw42, @pfeerick, @yaapu, @rotorman, @hydra, @MRC3742, @gretel, @eshifri, @norulers.**
 A big thanks goes also to the OpenTX team and previous developers, on which EdgeTX is based upon.
 
 ### Keep in touch!
