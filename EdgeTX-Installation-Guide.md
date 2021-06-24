@@ -13,7 +13,7 @@ _**Note 1: Before you update to EdgeTX, it is highly recommended that you backup
 
 > The list below shows which .zip file to use for different radio types:
 > * **horus.zip** (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
-> * **nv14.zip** - FlySky Nirvana NV14
+> * **nv14.zip** - FlySky Nirvana NV14 _**Note: this transmitter is not yet supported in EdgeTX 2.4.0 and is planned for release 2.4.1**_
 > * **taranis-x7.zip** (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
 > * **taranis-x9.zip** (212x64 BW Screens) - X9D, X9D Plus, X9D Plus 2019
 
