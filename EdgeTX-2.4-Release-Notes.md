@@ -15,6 +15,7 @@ We are happy to bring you the first release of EdgeTX – the cutting edge open 
 * Stop mixer scheduler when stopping module
 * Set correct channel count for Ghost modules
 * Several other small fixes
+
 Additionally, EdgeTX adds the several other enhancements and new features:
 * Added touchscreen support for touchscreen equipped radios (including T18)
 * Overhauled user interface to better support touchscreen use
