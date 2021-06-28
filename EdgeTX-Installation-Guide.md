@@ -36,7 +36,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 3. Select “Flash” from the menu on the left side of the screen.
 4. Select “edgetx-firmware-v2.4.0rc3” from the option “Firmware Branch”
 5. Select the latest firmware for the “Firmware Version”
-6. Once metadata is downloaded, select the CORRECT radio type that you intend to flash.
+6. Once metadata is downloaded, select the **CORRECT** radio type that you intend to flash.
 7. Select “Write”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
 8. After the flashing is complete, restart your radio and you should be greeted with "Welcome to EdgeTX."
 
