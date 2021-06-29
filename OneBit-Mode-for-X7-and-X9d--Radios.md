@@ -7,6 +7,6 @@ To address this issue, EdgeTX has developed OneBite Mode.  OneBit mode can help 
 
 To enable OneBit Mode, go to the hardware page in the system settings menu and select the Sample Mode “OneBit”. 
 
-
+![Onebit Mode](https://github.com/EdgeTX/edgetx.github.io/blob/master/images/OneBit.jpg)
 
 _Special thanks to Hydra for his work on this feature and his detailed documentation that was used as a reference for this wiki page._
