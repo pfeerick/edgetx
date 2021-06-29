@@ -9,4 +9,6 @@ To enable OneBit Mode, go to the hardware page in the system settings menu and s
 
 ![Onebit Mode](https://github.com/EdgeTX/edgetx.github.io/blob/master/images/OneBit.jpg)
 
+To see additional technical details regarding this feature, you can review the [pull request.](https://github.com/EdgeTX/edgetx/pull/59)
+
 _Special thanks to Hydra for his work on this feature and his detailed documentation that was used as a reference for this wiki page._
