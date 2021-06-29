@@ -50,3 +50,6 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 _**Note 1: The radio software may default to mode 1 stick configuration. If you have a mode 2 radio, you will most likely see a “Throttle Warning”. To fix this, go into the radio settings and change to mode 2.**_
 
+## Installation Reference Videos
+
+[EdgeTX • How-To Migrate from OpenTX to EdgeTX and back to OpenTX](https://www.youtube.com/watch?v=PhpDf-j_3_Q) - RC Video Reviews
