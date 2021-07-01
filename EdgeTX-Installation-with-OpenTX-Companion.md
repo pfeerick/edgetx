@@ -31,12 +31,14 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 ## Flashing the EdgeTX Bootloader and Firmware
 
-1. Download the current EdgeTX Firmware. You can download the releaes candidate build zip file (edgetx-firmware-v2.4.0-rc3.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0-rc3
+1. Download the current EdgeTX Firmware. You can download the release candidate build .zip file (edgetx-firmware-v2.4.0-rc3.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0-rc3
 
 2. Unzip the file and save the correct .bin file (same name as your radio type) to your computer.
 
 3. Flash your radio with OpenTX Companion. When you connect your radio to the PC, **_your radio should not be powered up_**. Make sure the “Check Hardware Compatibility” box is not checked in the “Flash Firmware” dialog box. Flashing progress will be slow and typically takes some minutes – that is normal.
  
+![](https://github.com/EdgeTX/edgetx.github.io/blob/master/images/Picture3.png)
+
 4. After the flashing is complete, restart your radio and you should be greeted with Welcome EdgeTX. 
 
 **If you did not add the RADIO and MODELS folders to your SD card for conversion**, when the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio.
