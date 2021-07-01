@@ -1,6 +1,7 @@
 <p align="center">
 <a href="url"><img src="https://github.com/EdgeTX/edgetx.github.io/blob/master/images/edgetx-v2.png" align="center" height="150" width="150" ></a>
 
+# DRAFT
 # EdgeTX Installation with OpenTX Companion
 
 
@@ -11,24 +12,23 @@ _Unfortunately, it is not possible to copy over the setup for your widgets from 
 ## SD Card Preparation
 1. Download and extract the EdgeTX SD card content for your radio type to your computer. The SD card contents can be found here: https://github.com/EdgeTX/edgetx-sdcard/releases
 
-The list below shows which .zip file to use for different radio types:
+> The list below shows which .zip file to use for different radio types:
 
-* horus.zip (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
+> * horus.zip (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
 
-* nv14.zip - FlySky Nirvana NV14 Note: this transmitter is not yet supported in EdgeTX 2.4.0 and is planned for future release 
+> * nv14.zip - FlySky Nirvana NV14 Note: this transmitter is not yet supported in EdgeTX 2.4.0 and is planned for future release 
 
-* taranis-x7.zip (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
+> * taranis-x7.zip (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
 
-* taranis-x9.zip (212x64 BW Screens) - X9D, X9D Plus, X9D Plus 2019
+> * taranis-x9.zip (212x64 BW Screens) - X9D, X9D Plus, X9D Plus 2019
 
 2. Delete everything from your SD card and copy the contents of the unzipped folder to your blank SD card.  (If you did a format ensure it is set to fat32)
 
-Note: To import your models from OpenTX, copy your MODEL, RADIO and (optional) SOUND, WIDGET, and SCRIPT folders folders along with their COMPLETE contents from your OpenTX SD Card to your new EdgeTX SD Card.
+_Note: To import your models from OpenTX, copy your MODELS and RADIO folders along with their COMPLETE contents from your OpenTX SD Card to your new EdgeTX SD Card. Now is also the time to copy over any custom sounds, model images, widgets or Lua scripts to their respective folders._
+
+3. Download the desired sound pack (if you didn’t transfer your existing sounds) (https://github.com/EdgeTX/edgetx-sdcard-sounds/releases), unzip and copy to the "Sounds" folder on your SD card.
 
 
-
-
-8. Unplug your USB cable from your Radio and power your radio off.
 ## Flashing the EdgeTX Bootloader and Firmware
 
 1. Open EdgeTX flasher if it is not still open.
