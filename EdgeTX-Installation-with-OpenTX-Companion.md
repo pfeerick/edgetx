@@ -47,3 +47,13 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 _**Note 1: The radio software may default to mode 1 stick configuration. If you have a mode 2 radio, you will most likely see a “Throttle Warning”. To fix this, go into the radio settings and change to mode 2.**_
 
+### For radios without SD card storage, use the following steps:
+1.	Download the firmware to your computer as described above (steps 1-2 above)
+2.	Flash the radio with OpenTX Companion as described in step 3 (this will update the bootloader).
+3.	Start the radio normally and format the EEPROM when prompted
+4.	Start the Radio in Bootloader Mode using the “three finger boogie*”.
+5.	Flash the radio again with OpenTX companion (this will update the Firmware).
+
+>  *”three finger boogie” = holding trim switches T4 and T1 to center while pushing the power button on.
+
+
