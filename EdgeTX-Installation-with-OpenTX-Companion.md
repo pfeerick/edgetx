@@ -31,14 +31,13 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 ## Flashing the EdgeTX Bootloader and Firmware
 
-1. Open EdgeTX flasher if it is not still open.
-2. Plug in your radio (radio power should be off).
-3. Select “Flash” from the menu on the left side of the screen.
-4. Select “edgetx-firmware-v2.4.0rc3” from the option “Firmware Branch”
-5. Select the latest firmware for the “Firmware Version”
-6. Once metadata is downloaded, select the **CORRECT** radio type that you intend to flash.
-7. Select “Write”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
-8. After the flashing is complete, restart your radio and you should be greeted with "Welcome to EdgeTX."
+1. Download the current EdgeTX Firmware. You can download the releaes candidate build zip file (edgetx-firmware-v2.4.0-rc3.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0-rc3
+
+2. Unzip the file and save the correct .bin file (same name as your radio type) to your computer.
+
+3. Flash your radio with OpenTX Companion. When you connect your radio to the PC, **_your radio should not be powered up_**. Make sure the “Check Hardware Compatibility” box is not checked in the “Flash Firmware” dialog box. Flashing progress will be slow and typically takes some minutes – that is normal.
+ 
+4. After the flashing is complete, restart your radio and you should be greeted with Welcome EdgeTX. 
 
 **If you did not add the RADIO and MODELS folders to your SD card for conversion**, when the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio.
 
