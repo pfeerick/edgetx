@@ -5,9 +5,9 @@
 As of 28.June.2021
 
 
-_Note: Before you update to EdgeTX, it is highly recommended that you **backup your current firmware and SD card contents in case you need to roll back** to your previous version for some reason. Additionally, **you will need your MODEL, RADIO folders if you want to convert your existing models** created in OpenTX to work with EdgeTX. Also, if you have added custom sounds, model images widgets or Lua scripts to your radio, you will also need your SOUNDS, WIDGETS, and SCRIPTS folders._
+_Note: Before you update to EdgeTX, it is highly recommended that you **backup your current firmware and SD card contents in case you need to roll back** to your previous version for some reason. Additionally, **you will need your MODEL and RADIO folders if you want to convert your existing models** created in OpenTX to work with EdgeTX. Also, if you have added either custom sounds, model images, widgets or Lua scripts to your radio, you will also need your SOUNDS, WIDGETS, and SCRIPTS folders._
 
-_Unfortunately, it is not possible to copy over the setup for your widgets from OpenTX. They will have to be set up again manually in EdgeTX._
+_Unfortunately, it is not possible to copy over the setup for your widgets from OpenTX at the moment. They will have to be set up again manually in EdgeTX._
 
 ## Installing the EdgeTX Flasher
 1. Download the EdgeTX firmware flasher utility from the following link:  https://github.com/EdgeTX/flasher/releases
@@ -36,7 +36,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 1. Open EdgeTX flasher if it is not still open.
 2. Plug in your radio (radio power should be off).
 3. Select “Flash” from the menu on the left side of the screen.
-4. Select “edgetx-firmware-v2.4.0rc3” from the option “Firmware Branch”
+4. Select “edgetx-firmware-v2.4.0rc4” from the option “Firmware Branch”
 5. Select the latest firmware for the “Firmware Version”
 6. Once metadata is downloaded, select the **CORRECT** radio type that you intend to flash.
 7. Select “Write”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
