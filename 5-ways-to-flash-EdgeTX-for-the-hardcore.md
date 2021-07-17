@@ -14,6 +14,7 @@
 4. **Use STM32CubeProgrammer** in DFU mode.
    Benefit: comes with appropriate DFU drivers, very reliable, the "official" way of flashing STM32 µC.
    Downside: more options and buttons to click than with other methods and thus likely not suitable for novices or not technically inclined.
+   You can find some usage tips about STM32CubeProgrammer under EdgeTX Dev Wiki: [https://github.com/EdgeTX/edgetx/wiki/Unbrick-your-radio](https://github.com/EdgeTX/edgetx/wiki/Unbrick-your-radio)
 
 5. **Use hardware programmer/debugge**r to flash the STM32 chip via Serial-Wire-Debug (SWD) header.
    Benefit: can not only program, but also in-circuit-debug, no DFU drivers required.
