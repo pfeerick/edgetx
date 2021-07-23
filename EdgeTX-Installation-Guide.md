@@ -10,7 +10,7 @@ _Note: Before you update to EdgeTX, it is highly recommended that you **backup y
 _Unfortunately, it is not possible to copy over the setup for your widgets from OpenTX at the moment. They will have to be set up again manually in EdgeTX._
 
 ## Installing the EdgeTX Flasher
-1. Download the EdgeTX firmware flasher utility from the following link:  https://github.com/EdgeTX/flasher/releases
+1. Download the latest EdgeTX firmware flasher utility from the following link:  https://github.com/EdgeTX/flasher/releases
 2. Click the arrow to the left side of “Assets” to expand the menu.
 3. Click on the correct executable file based on your operating system (Linux, Mac, Windows) to download the file.
 4. Depending on your web browser, you may get a warning that the file type may be dangerous. If this occurs, select the option to save/keep the file anyways (This warning is normal when downloading executable files).
@@ -36,8 +36,8 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 1. Open EdgeTX flasher if it is not still open.
 2. Plug in your radio (radio power should be off).
 3. Select “Flash” from the menu on the left side of the screen.
-4. Select “edgetx-firmware-v2.4.0rc4” from the option “Firmware Branch”
-5. Select the latest firmware for the “Firmware Version”
+4. Select “Releases” for the option “Firmware Branch”
+5. Select the release version that you want (currently **_v2.4.0_** is the latest offical release) for the “Firmware Version”
 6. Once metadata is downloaded, select the **CORRECT** radio type that you intend to flash.
 7. Select “Write”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
 8. After the flashing is complete, restart your radio and you should be greeted with "Welcome to EdgeTX."
