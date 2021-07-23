@@ -9,7 +9,10 @@ _Note: Before you update to EdgeTX, it is highly recommended that you **backup y
 
 _Unfortunately, it is not possible to copy over the setup for your widgets from OpenTX at the moment. They will have to be set up again manually in EdgeTX._
 
+
 ## Installing the EdgeTX Flasher
+_Note: You may also install EdgeTX using OpenTX Companion. Directions can be found here- [EdgeTX Installation with OpenTX Companion](https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-with-OpenTX-Companion)_
+
 1. Download the latest EdgeTX firmware flasher utility from the following link:  https://github.com/EdgeTX/flasher/releases
 2. Click the arrow to the left side of “Assets” to expand the menu.
 3. Click on the correct executable file based on your operating system (Linux, Mac, Windows) to download the file.
