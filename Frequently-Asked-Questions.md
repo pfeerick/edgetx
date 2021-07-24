@@ -50,3 +50,27 @@ Basically, everything that is supported in OTX 2.3, minus 9X / 9XR-pro.
 **Does EdgeTX support the Flysky Nirvana NV14?**
 
 EdgeTX does not currently support the Flysky Nirvana NV14. However, we are actively working to support it. We are hopeful to have a usable version for testing in mid to late August with the intent to have it supported in our next release.
+
+**Will EdgeTX follow the same versioning format as OpenTX?**
+
+Although EdgeTX is starting with a versioning scheme in line with OpenTX, we have decided to transition to a more standard versioning scheme going forward. In this scheme, the major version will be listed first, followed by the minor version, followed by the bugfix version. 
+
+_For example:_
+
+_v2.4.0 - Current version_
+
+_v2.4.1 - 1st bugfix release of v2.4 (released as needed)_
+
+_v2.4.2 - 2nd bugfix release of v2.4 (released as needed)_
+
+_v2.5.0 - Minor release (planned for September) - new features, enhancements, and bug fixes._
+
+_v2.5.1 - 1st bugfix release of v2.5 (released as needed)_
+
+_v2.6.0 - Minor release (planned for December) - new features, enhancements, and bug fixes._
+
+_v2.6.1 - 1st bugfix release of v2. (released as needed)_
+
+_v3.0.0 - Major release (not planned) - Major changes to UI, features and functions_
+
+
