@@ -2,7 +2,7 @@
 
 ## Versioning Scheme
 
-Although EdgeTX is starting with a versioning scheme inline with OpenTX, we have decided to transition to a more industry standard versioning scheme going forward. In this scheme, the major version will be listed first, followed by the minor version, followed by the bugfix version. 
+EdgeTX will use a standard 3 stage versioning scheme. In this scheme, the major version will be listed first, followed by the minor version, followed by the bugfix version (major.minor.bugfix). 
 
 *For example:*
 
