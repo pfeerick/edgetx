@@ -2,7 +2,7 @@
 
 ## Versioning Scheme
 
-EdgeTX will use a standard 3 stage versioning scheme. In this scheme, the major version will be listed first, followed by the minor version, followed by the bugfix version (major.minor.bugfix). 
+EdgeTX uses a standard 3 stage versioning scheme. In this scheme, the major version will be listed first, followed by the minor version, followed by the bugfix version (major.minor.bugfix). 
 
 *For example:*
 
