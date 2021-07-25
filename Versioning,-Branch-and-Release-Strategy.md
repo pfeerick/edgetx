@@ -27,7 +27,7 @@ v2.5.1 - 1st bugfix release of v2.5 (released as needed) v2.6.0 - Minor release 
 
 **edgetx-firmware-v2.x.x** - This is the release branch. Once all features and fixes that have been planned for a release are complete and initial testing has been completed, the release branch will be branched from the trunk. Once that occurs, the only changes that will be made to this branch are for bug fixes. Further feature development and enhancments will be added to the trunk, not the release branch.  Any bug fixes that are made to the release branch are also made in the trunk to keep them aligned. 
 
-**edgetx-firmware-XXXX** - This is a feature-specific branch of the trunk that has been created for a developer to develop and test on. Normally users should not install these branches unless specifically asked by a developer for testing purposes.
+**edgetx-firmware-XXXX** - This is a feature-specific branch of the trunk that has been created by a developer to develop and test on. Normally users should not install these branches unless specifically asked by a developer for testing purposes.
 
 
 ## Release Strategy
