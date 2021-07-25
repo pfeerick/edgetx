@@ -19,15 +19,15 @@ v2.5.1 - 1st bugfix release of v2.5 (released as needed) v2.6.0 - Minor release 
 
 ## Branch Strategy
 
-**edgetx-firmware-main** - This is the main branch, also known and the "Trunk". All code changes are added to this branch once the change has been reviewed by another developer and has been tested. If you download firmware from this branch, you will have all code changes that have been checked in by the developers. It is important to note that full system testing has NOT been completed and only feature/function-specific testing had been completed.
+**edgetx-firmware-main** - This is the main branch, also known and the "Trunk". All code changes are added to this branch once the change has been reviewed by another developer and has been tested. If you download firmware from this branch, you will have all code changes that have been checked in by the developers. It is important to note that full system testing has NOT been completed and only feature/function-specific testing had been completed. _This branch is only visible with the Flasher in advaced mode._
 
-**edgetx-firmware-merge** - This is a copy of the trunk that has specific changes added to it for testing purposes. Once the changes have been tested and are deemed safe, they are then merged into the trunk. Normally, testers or certain users may get asked to test a build from the merge branch if they are helping a developer test a new feature or fix before it is merged to the trunk.
+**edgetx-firmware-merge** - This is a copy of the trunk that has specific changes added to it for testing purposes. Once the changes have been tested and are deemed safe, they are then merged into the trunk. Normally, testers or certain users may get asked to test a build from the merge branch if they are helping a developer test a new feature or fix before it is merged to the trunk. _This branch is only visible with the Flasher in advaced mode._
 
-**edgetx-firmware-nightly** - This is a "snapshot" of the trunk created every night, normally after all changes have been checked in for a certain day. Like the trunk, only feature/function-specific testing had been completed. However, nightly builds may be considered a bit more stable as they all the changes from a certain day rolled up together and tested.
+**edgetx-firmware-nightly** - This is a "snapshot" of the trunk created every night, normally after all changes have been checked in for a certain day. Like the trunk, only feature/function-specific testing had been completed. However, nightly builds may be considered a bit more stable as they contain all the changes from a certain day rolled up together and tested.
 
 **edgetx-firmware-v2.x.x** - This is the release branch. Once all features and fixes that have been planned for a release are complete and initial testing has been completed, the release branch will be branched from the trunk. Once that occurs, the only changes that will be made to this branch are for bug fixes. Further feature development and enhancments will be added to the trunk, not the release branch.  Any bug fixes that are made to the release branch are also made in the trunk to keep them aligned. 
 
-**edgetx-firmware-XXXX** - This is a feature-specific branch of the trunk that has been created by a developer to develop and test on. Normally users should not install these branches unless specifically asked by a developer for testing purposes.
+**edgetx-firmware-XXXX** - This is a feature-specific branch of the trunk that has been created by a developer to develop and test on. Normally users should not install these branches unless specifically asked by a developer for testing purposes. _These branches are only visible with the Flasher in advaced mode._
 
 
 ## Release Strategy
