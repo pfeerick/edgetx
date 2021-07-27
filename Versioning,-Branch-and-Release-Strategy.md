@@ -1,5 +1,3 @@
-# DRAFT
-
 ## Versioning Scheme
 
 EdgeTX uses a 3 stage versioning scheme, the major version number is listed first, followed by the minor version number, and lastly the bugfix version number (major.minor.bugfix).
