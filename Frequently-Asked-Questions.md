@@ -25,13 +25,13 @@ To see the list of improvments as well as limitations of EdgeTX, please review t
 
 **Will I still be able to use OpenTX Companion to manage my models with EdgeTX?**
 
-Yes, you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio.
+Yes, in the future you will still be able to manage your models with OpenTX Companion. The new EdgeTX flasher will only be for downloading the firmware and flashing your radio.
 
  _Please note- OpenTX Companion is currently NOT compatible with EdgeTX - we are working on that. However, you can import and convert your existing models to use with EdgeTX. See the [installation guide](https://github.com/EdgeTX/edgetx.github.io/wiki/EdgeTX-Installation-Guide) for more information._
 
-**What radio-transmitters will be supported?**
+**What radio-transmitters are supported?**
 * X9Lite 
-* QX7 (non-Access)
+* QX7 (QX7 with Access must be manually compiled and is not available in the Flasher)
 * T12 
 * TX12
 * T8
@@ -49,7 +49,7 @@ Basically, everything that is supported in OTX 2.3, minus 9X / 9XR-pro.
 
 **Does EdgeTX support the Flysky Nirvana NV14?**
 
-EdgeTX does not currently support the Flysky Nirvana NV14. However, we are actively working to support it. We are hopeful to have a usable version for testing in mid to late August with the intent to have it supported in our next release.
+EdgeTX does not currently support the Flysky Nirvana NV14. However, we are actively working to support it. We will have a usable version for testing in very soon with the intent to have it supported in our next release.
 
 **Will EdgeTX follow the same versioning format as OpenTX?**
 
