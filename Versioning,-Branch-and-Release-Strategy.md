@@ -2,7 +2,7 @@
 
 ## Versioning Scheme
 
-EdgeTX uses a 3 stage versioning scheme, where the major version will be listed first, followed by the minor version and by the bugfix version number (major.minor.bugfix).
+EdgeTX uses a 3 stage versioning scheme, the major version number is listed first, followed by the minor version number, and lastly the bugfix version number (major.minor.bugfix).
 
 *For example:*
 
@@ -21,13 +21,13 @@ v2.6.0 - Minor release (planned for December 2021) - new features, enhancements 
 
 ## Branch Strategy
 
-**edgetx-firmware-main** - This is the main working branch. All code changes are added to this branch once the changes have been tested and reviewed by another developer. If you download firmware from this branch, you will have all code changes that have been checked in by the developers. It is important to note that full system testing has NOT been completed and only feature/function-specific testing had been completed. _This branch is only visible with the Flasher in advanced mode._
+**edgetx-firmware-main** - This is the main branch. All code changes are added to this branch once the changes have been tested and reviewed by another developer. If you download firmware from this branch, you will have all code changes that have been checked in by the developers. It is important to note that full system testing has NOT been completed and only feature/function-specific testing had been completed. _This branch is only visible with the Flasher in advanced mode._
 
 **edgetx-firmware-merge** - This is a copy of the main branch that has specific changes added to it for testing purposes. Once the changes have been tested and are deemed safe, they are then merged into the main branch. Normally, the developers ask a specific testers user group to evaluate a build from the merge branch, before it is merged to the main branch. If you are interested in helping out with testing, come and join EdgeTX Discord in #tests channel. _This branch is only visible with the Flasher in advanced mode._
 
-**edgetx-firmware-nightly** - This is a "snapshot" of the main branch, created every night, normally after all changes have been checked in for a certain day. Like the main branch, only feature/function-specific testing had been completed. However, nightly builds may be considered a bit more stable as they contain all the changes from a certain day rolled up together and tested.
+**edgetx-firmware-nightly** - This is a "snapshot" of the main branch, created every night, normally after all changes have been checked in for a certain day. Like the main branch, only feature/function-specific testing has been completed. However, nightly builds may be considered a bit more stable as they contain all the changes from a certain day rolled up together and tested.
 
-**edgetx-firmware-vX.Y.Z** - This is the release branch. Once all features and fixes that have been planned for a release are finished and initial testing has been completed, the release will be detached from the main working branch. Once that occurs, only bug fixes are applied to the release branch. Further feature development and enhancments will continue on the main branch, but not on the release branch. Any bug fixes that are made to the release branch are also propagated to the main branch.
+**edgetx-firmware-vX.Y.Z** - This is the release branch. Once all features and fixes that have been planned for a release are finished and initial testing has been completed, the release will be detached from the main branch. Once that occurs, only bug fixes are applied to the release branch. Further feature development and enhancments will continue on the main branch, but not on the release branch. Any bug fixes that are made to the release branch are also propagated to the main branch.
 
 **edgetx-firmware-XXXX** - This is a feature-specific branch of the main branch that has been created by a developer to develop and test on. Normally end-users should not install these branches unless specifically asked by a developer for testing purposes. _These branches are only visible with the Flasher in advanced mode._
 
@@ -36,7 +36,7 @@ v2.6.0 - Minor release (planned for December 2021) - new features, enhancements 
 
 EdgeTX plans to have 4 minor releases per year. Bug fix releases will occur as needed between minor releases. Major releases are not currently planned at particular time intervals and will occur based on the future roadmap.
 
-Before major and minor releases (see versioning scheme above), once the release branch has been created and stabilized, a release candidate (RC) will be made from the release branch. The RC is used for the final testing and published for evaluation and feedback. Generally speaking, a release candidate is considered higher quality than a BETA release but that has not yet matured to a release.
+In the case of major and minor releases (see versioning scheme above), once the release branch has been created and stabilized, a release candidate (RC) will be made from the release branch. The RC is used for the final testing and published for evaluation and feedback. Generally speaking, a release candidate is considered higher quality than a BETA release but that has not yet matured to a release.
 
 Depending on the outcome of the testing, as well as feedback received from the public, additional bug fixes may be made, resulting in further RC versions being published. If no major bugs were found, then the RC will become the next release version.
 
