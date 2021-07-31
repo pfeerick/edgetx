@@ -37,6 +37,8 @@ Yes, in the future you will still be able to manage your models with OpenTX Comp
 * T8
 * Tlite
 * XLite
+* XLite S
+* XLite Pro (use XLite S Target)
 * X9DP 
 * X9DP2019 
 * X10
