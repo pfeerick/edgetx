@@ -45,5 +45,3 @@
   How: solder header or wires to internal SWD header and attach a hw-programmer/debugger such as ST-LinkV2 or Segger J-Link/J-Trace.
   Benefit: the fastest way of flashing (with 50 MHz J-Link/J-Trace, roughly 3 sec. on color radio), flashes bootloader and firmware in one go, can thus also unbrick radio, no DFU drivers required.
   Downside: viable option only for developers with appropriate hardware and knowledge.
-
-_Special thanks to Risto for the detailed and informative contribution._
