@@ -318,12 +318,14 @@
   #define ADC_CHANNEL_EXT1              ADC_Channel_6   // ADC3_IN6
   #define ADC_CHANNEL_EXT2              ADC_Channel_7   // ADC3_IN7
   #define ADC_MAIN                      ADC3
+  #define ADC_EXT                       ADC1
   #define ADC_SAMPTIME                  3
   #define ADC_DMA                       DMA2
-  #define ADC_DMA_SxCR_CHSEL            DMA_SxCR_CHSEL_1
+  #define ADC_DMA_Channel               DMA_Channel_2
   #define ADC_DMA_Stream                DMA2_Stream0
-  #define ADC_SET_DMA_FLAGS()           ADC_DMA->LIFCR = (DMA_LIFCR_CTCIF0 | DMA_LIFCR_CHTIF0 | DMA_LIFCR_CTEIF0 | DMA_LIFCR_CDMEIF0 | DMA_LIFCR_CFEIF0)
   #define ADC_TRANSFER_COMPLETE()       (ADC_DMA->LISR & DMA_LISR_TCIF0)
+  #define ADC_DMA_TC_Flag               DMA_FLAG_TCIF0
+
   #if defined(RADIO_TX16S)
     #define ADC_VREF_PREC2              330
   #elif defined(RADIO_T16) || defined(RADIO_T18)
@@ -332,9 +334,6 @@
     #define ADC_VREF_PREC2              250
   #endif
 #endif
-
-#define ADC_MAIN_SMPR1                  (ADC_SAMPTIME << 0) + (ADC_SAMPTIME << 3) + (ADC_SAMPTIME << 6) + (ADC_SAMPTIME << 9) + (ADC_SAMPTIME << 12) + (ADC_SAMPTIME << 15) + (ADC_SAMPTIME << 18) + (ADC_SAMPTIME << 21) + (ADC_SAMPTIME << 24);
-#define ADC_MAIN_SMPR2                  (ADC_SAMPTIME << 0) + (ADC_SAMPTIME << 3) + (ADC_SAMPTIME << 6) + (ADC_SAMPTIME << 9) + (ADC_SAMPTIME << 12) + (ADC_SAMPTIME << 15) + (ADC_SAMPTIME << 18) + (ADC_SAMPTIME << 21) + (ADC_SAMPTIME << 24) + (ADC_SAMPTIME << 27);
 
 // Power
 #if defined(RADIO_T18)
@@ -811,21 +810,8 @@
   #define INTMODULE_BOOTCMD_GPIO_PIN    GPIO_Pin_9  // PI.09
 #endif
 #define INIT_INTMODULE_BOOTCMD_PIN() GPIO_ResetBits(INTMODULE_BOOTCMD_GPIO, INTMODULE_BOOTCMD_GPIO_PIN);
-#if (defined(PCBX10) || PCBREV >= 13) && !defined(HARDWARE_EXTERNAL_ACCESS_MOD) //TIM2 used by ext mod
-  #define INTMODULE_RCC_APB1Periph      RCC_APB1Periph_TIM2
-  #define INTMODULE_RCC_APB2Periph      RCC_APB2Periph_USART1
-  #define INTMODULE_TIMER               TIM2
-  #define INTMODULE_TIMER_IRQn          TIM2_IRQn
-  #define INTMODULE_TIMER_IRQHandler    TIM2_IRQHandler
-  #define INTMODULE_TIMER_FREQ          (PERI1_FREQUENCY * TIMER_MULT_APB1)
-#else
-  #define INTMODULE_RCC_APB1Periph      0
-  #define INTMODULE_RCC_APB2Periph      (RCC_APB2Periph_TIM1 | RCC_APB2Periph_USART1)
-  #define INTMODULE_TIMER               TIM1
-  #define INTMODULE_TIMER_IRQn          TIM1_CC_IRQn
-  #define INTMODULE_TIMER_IRQHandler    TIM1_CC_IRQHandler
-  #define INTMODULE_TIMER_FREQ          (PERI2_FREQUENCY * TIMER_MULT_APB2)
-#endif
+#define INTMODULE_RCC_APB1Periph      0
+#define INTMODULE_RCC_APB2Periph      RCC_APB2Periph_USART1
 
 // External Module
 #define EXTMODULE_PWR_GPIO                 GPIOB
@@ -909,6 +895,7 @@
 #define INTMODULE_HEARTBEAT_EXTI_PinSource      GPIO_PinSource12
 #define INTMODULE_HEARTBEAT_EXTI_LINE           EXTI_Line12
 #define INTMODULE_HEARTBEAT_EXTI_IRQn           EXTI15_10_IRQn
+#define INTMODULE_HEARTBEAT_EXTI_IRQHandler     EXTI15_10_IRQHandler
 #define INTMODULE_HEARTBEAT_REUSE_INTERRUPT_ROTARY_ENCODER
 #if defined(INTERNAL_MODULE_PXX2)
   #define INTMODULE_HEARTBEAT_TRIGGER           EXTI_Trigger_Falling

@@ -62,7 +62,7 @@ void boardOff();
 
 // Timers driver
 void init2MhzTimer();
-void init5msTimer();
+void init1msTimer();
 
 // PCBREV driver
 enum {
@@ -552,6 +552,8 @@ enum Analogs {
   TX_RTC_VOLTAGE,
   NUM_ANALOGS
 };
+
+#define HAS_TX_RTC_VOLTAGE
 
 #if defined(PCBX9LITE)
   #define NUM_POTS                      1

@@ -1,7 +1,7 @@
 project(OpenTX)
 
 set(VERSION_MAJOR "2")
-set(VERSION_MINOR "4")
+set(VERSION_MINOR "5")
 set(VERSION_REVISION "0")
 set(VERSION_SUFFIX $ENV{OPENTX_VERSION_SUFFIX})
 set(VERSION_FAMILY ${VERSION_MAJOR}.${VERSION_MINOR})
@@ -9,7 +9,7 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}${VERSION_SUFFI
 set(SDCARD_REVISION "0037")
 set(SDCARD_VERSION  ${VERSION_MAJOR}.${VERSION_MINOR}V${SDCARD_REVISION})
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0023 OLD)
 if(POLICY CMP0042)
@@ -47,7 +47,7 @@ today(DATE)
 now(TIME)
 git_id(GIT_STR)
 
-message(STATUS "OpenTX ${VERSION} @ ${GIT_STR}")
+message(STATUS "EdgeTX ${VERSION} @ ${GIT_STR}")
 
 # options shared by all targets
 

@@ -622,6 +622,16 @@ class ModuleWindow : public FormGroup {
                                   rfChoice->setFocus(SET_FOCUS_DEFAULT);
                               });
       }
+      else if (isModuleFlySky(moduleIdx)) {
+        rfChoice = new Choice(this, grid.getFieldSlot(2, 1), STR_FLYSKY_PROTOCOLS, 0, MODULE_SUBTYPE_ISRM_PXX2_ACCST_LR12,
+                              GET_DEFAULT(g_model.moduleData[moduleIdx].subType),
+                              [=](int32_t newValue) {
+                                  g_model.moduleData[moduleIdx].subType = newValue;
+                                  SET_DIRTY();
+                                  update();
+                                  rfChoice->setFocus(SET_FOCUS_DEFAULT);
+                              });
+      }
 #if defined(MULTIMODULE)
       else if (isModuleMultimodule(moduleIdx)) {
         Choice * mmSubProtocol = nullptr;
@@ -900,7 +910,18 @@ class ModuleWindow : public FormGroup {
         // Model index
         if (isModuleModelIndexAvailable(moduleIdx)) {
           thirdColumn++;
-          new NumberEdit(this, grid.getFieldSlot(3, 0), 0, getMaxRxNum(moduleIdx), GET_SET_DEFAULT(g_model.header.modelId[moduleIdx]));
+          new NumberEdit(
+              this, grid.getFieldSlot(3, 0), 0, getMaxRxNum(moduleIdx),
+              GET_DEFAULT(g_model.header.modelId[moduleIdx]),
+              [=](int32_t newValue) {
+                if (newValue != g_model.header.modelId[moduleIdx]) {
+                  g_model.header.modelId[moduleIdx] = newValue;
+                  if (isModuleCrossfire(moduleIdx)) {
+                    moduleState[moduleIdx].counter = CRSF_FRAME_MODELID;
+                  }
+                  SET_DIRTY();
+                }
+              });
         }
 
         if (isModuleBindRangeAvailable(moduleIdx)) {
@@ -912,14 +933,15 @@ class ModuleWindow : public FormGroup {
               if (moduleState[moduleIdx].mode == MODULE_MODE_BIND) {
                 moduleState[moduleIdx].mode = MODULE_MODE_NORMAL;
                 return 0;
-              }
+              } else {
 #if defined(MULTIMODULE)
-              else {
-                setMultiBindStatus(moduleIdx, MULTI_BIND_INITIATED);
+                if (isModuleMultimodule(moduleIdx)) {
+                  setMultiBindStatus(moduleIdx, MULTI_BIND_INITIATED);
+                }
+#endif
                 moduleState[moduleIdx].mode = MODULE_MODE_BIND;
                 return 1;
               }
-#endif
               return 0;
           });
           bindButton->setCheckHandler([=]() {
@@ -927,7 +949,7 @@ class ModuleWindow : public FormGroup {
                 bindButton->check(false);
               }
 #if defined(MULTIMODULE)
-              if (getMultiBindStatus(moduleIdx) == MULTI_BIND_FINISHED) {
+              if (isModuleMultimodule(moduleIdx) && getMultiBindStatus(moduleIdx) == MULTI_BIND_FINISHED) {
                 setMultiBindStatus(moduleIdx, MULTI_BIND_NONE);
                 moduleState[moduleIdx].mode = MODULE_MODE_NORMAL;
                 bindButton->check(false);
@@ -1029,7 +1051,7 @@ class ModuleWindow : public FormGroup {
       }
 
       // Receivers
-      if (isModulePXX2(moduleIdx)) {
+      if (isModuleRFAccess(moduleIdx)) {
         for (uint8_t receiverIdx = 0; receiverIdx < PXX2_MAX_RECEIVERS_PER_MODULE; receiverIdx++) {
           char label[] = TR_RECEIVER " X";
           label[sizeof(label) - 2] = '1' + receiverIdx;

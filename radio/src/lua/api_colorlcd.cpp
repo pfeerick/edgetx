@@ -47,7 +47,10 @@ static int8_t getTextVerticalOffset(LcdFlags flags)
   if (font_index >= sizeof(text_vertical_offset)) {
     return 0;
   }
-  return text_vertical_offset[font_index];
+  int vcenter = 0;
+  if (flags & VCENTERED)
+    vcenter = 0.5 * getFontHeight(flags & 0xFFFF);
+  return text_vertical_offset[font_index] - vcenter;
 }
 
 /*luadoc
@@ -210,7 +213,10 @@ See the [Appendix](../appendix/fonts.md) for available characters in each font s
  * `SMLSIZE` small font
  * `INVERS` inverted display
  * `BLINK` blinking text
- * `SHADOWED` Horus only, apply a shadow effect
+ * `RIGHT` right align text
+ * `CENTER` color only, center align text
+ * `VCENTER` color only, center text vertically
+ * `SHADOWED` color only, apply a shadow effect
 
 @status current Introduced in 2.0.0, `SHADOWED` introduced in 2.2.1
 */
@@ -257,6 +263,26 @@ static int luaLcdDrawText(lua_State *L)
   luaLcdBuffer->drawText(x, y, s, att);
 
   return 0;
+}
+
+/*luadoc
+@function lcd.sizeText(text [, flags])
+
+Get the width and height of a text string drawn with flags
+
+@param text (string)
+
+@param flags (unsigned number) drawing flags. See lcd.drawText.
+
+@status current Introduced in 2.5.0
+*/
+static int luaLcdSizeText(lua_State *L)
+{
+  const char * s = luaL_checkstring(L, 1);
+  unsigned int att = luaL_optunsigned(L, 2, 0);
+  lua_pushinteger(L, getTextWidth(s, 255, att));
+  lua_pushinteger(L, getFontHeight(att & 0xFFFF) + getTextVerticalOffset(att & ~VCENTERED));
+  return 2;
 }
 
 /*luadoc
@@ -1097,6 +1123,7 @@ const luaL_Reg lcdLib[] = {
   { "drawRectangle", luaLcdDrawRectangle },
   { "drawFilledRectangle", luaLcdDrawFilledRectangle },
   { "drawText", luaLcdDrawText },
+  { "sizeText", luaLcdSizeText },
   { "drawTimer", luaLcdDrawTimer },
   { "drawNumber", luaLcdDrawNumber },
   { "drawChannel", luaLcdDrawChannel },
