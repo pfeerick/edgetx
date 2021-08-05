@@ -455,13 +455,6 @@ Nothing new (only Companion fixes)
 [9XR-PRO]
 <ul>
 <li>Coprocessor interface bugfix</li>
-</ul>
-
-[Stock]
-<ul>
-<li>Fixed never ending haptic repeat</li>
-<li>Fixed curves display</li>
-</ul>
 
 [All]
 <ul>
