@@ -19,6 +19,7 @@ on:
 
 jobs:
   test:
+    if: github.event.label.name != 'companion'
     name: Run tests
     runs-on: ubuntu-latest
     strategy:
