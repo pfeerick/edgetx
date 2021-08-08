@@ -37,7 +37,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 4. Exit back to the main screen and then shut off your radio.
 
-5. Boot your radio in bootLoader mode (holding trim switches T4 and T1 to center while pushing the power button on). 
+5. Boot your radio in bootloader mode (holding trim switches T4 and T1 to center while pushing the power button on). 
 
 6. You should now see the EdgeTX bootloader. Select the option "Write Firmware".  Select the EdgeTX firmware file that you saved to your SD card. Long-press to flash it.
 
