@@ -34,6 +34,7 @@ _Note: It is recommended that no other USB drives are connected to your PC at th
 _Note: To import your models from OpenTX, copy your MODELS and RADIO folders along with their **COMPLETE** contents from your OpenTX SD Card to your new EdgeTX SD Card. Now is also the time to copy over any custom sounds, model images, widgets or Lua scripts to their respective folders._
 
 8. Unplug your USB cable from your Radio and power your radio off.
+
 ## Flashing the EdgeTX Bootloader and Firmware
 
 1. Open EdgeTX flasher if it is not still open.
@@ -42,7 +43,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 4. Select “Releases” for the option “Firmware Branch”
 5. Select the release version that you want (currently **_v2.4.0_** is the latest offical release) for the “Firmware Version”
 6. Once metadata is downloaded, select the **CORRECT** radio type that you intend to flash.
-7. Select “Write”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
+7. Select “Flash Radio Firmware”. You will see a message “Downloading bin” and then a “Flashing” popup with the flashing progress. Eventually, you will see “File downloaded successfully”. Ignore any error messages after that and click on "Close".
 8. After the flashing is complete, restart your radio and you should be greeted with "Welcome to EdgeTX."
 
 **If you did not add the RADIO and MODELS folders to your SD card for conversion**, when the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio.
