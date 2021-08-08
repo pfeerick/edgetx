@@ -1,7 +1,7 @@
 <p align="center">
 <a href="url"><img src="https://github.com/EdgeTX/edgetx.github.io/blob/master/images/edgetx-v2.png" align="center" height="150" width="150" ></a>
 
-# EdgeTX Installation with the Bootloader -DRAFT-
+# EdgeTX Installation with the Bootloader
 
 _Note: Before you update to EdgeTX, it is highly recommended that you **backup your current firmware and SD card contents in case you need to roll back** to your previous version for some reason. Additionally, **you will need your MODEL, RADIO folders if you want to convert your existing models** created in OpenTX to work with EdgeTX. Also, if you have added custom sounds, model images widgets or Lua scripts to your radio, you will also need your SOUNDS, WIDGETS, and SCRIPTS folders._
 
@@ -29,31 +29,27 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 ## Flashing the EdgeTX Bootloader and Firmware
 
-1. Download the current EdgeTX Firmware. You can download the latest release .zip file (edgetx-firmware-v2.4.0.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0
+1. Download the current EdgeTX firmware. You can download the latest release .zip file (edgetx-firmware-v2.4.0.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0
 
 2. Unzip the file and save the correct .bin file (same name as your radio type) to the "Firmware" folder on the SD card for your radio.
 
-3. Boot your radio in BootLoader mode (holding trim switches T4 and T1 to center while pushing the power button on. 
+3. Turn on your radio and navigate to the SD card screen. Open the "Firmware" folder and select the EdgeTX firmware file that you just copied to your SD card. Once the file is selected, select the option to "Flash bootloader". The bootloader will be flashed to the EdgeTX bootloader.
 
-4. Once in Bootloader moode, select the option to flash firmware.  Select the EdgeTX Firmware that you want to flash, long-press to flash in.
+4. Exit back to the main screen and then shut off your radio.
 
-5. After the flashing is complete, restart your radio and you should be greeted with Welcome EdgeTX. 
+5. Boot your radio in bootLoader mode (holding trim switches T4 and T1 to center while pushing the power button on). 
+
+6. You should now see the EdgeTX bootloader. Select the option "Write Firmware".  Select the EdgeTX firmware file that you saved to your SD card. Long-press to flash it.
+
+7. After the flashing is complete, select "Exit". The radio will restart and you should be greeted with "Welcome EdgeTX". 
 
 **If you did not add the RADIO and MODELS folders to your SD card for conversion**, when the radio starts with EdgeTX for the first time, you will get a STORAGE WARNING - Bad Radio Data-. Press the white circle or roller to bypass the warning. Then you will get another STORAGE WARNING - Storage Preparation. Press the white circle or roller again. Once the SD card is prepared, the calibration screen will appear. Calibrate your radio.
 
 **If you did add the RADIO and MODELS folders to your SD card for conversion** you should see a message telling you that a SD conversion is necessary. Select the white circle and it will begin converting your models. Depending on your previous radio settings the calibration screen may appear, If so, Calibrate your radio.
 
-# You are ready to start using EdgeTX!
+## You are ready to start using EdgeTX!
 
 _**Note 1: The radio software may default to mode 1 stick configuration. If you have a mode 2 radio, you will most likely see a “Throttle Warning”. To fix this, go into the radio settings and change to mode 2.**_
 
-### For radios without SD card storage, use the following steps:
-1.	Download the firmware to your computer as described above (steps 1-2 above)
-2.	Flash the radio with OpenTX Companion as described in step 3 (this will update the bootloader).
-3.	Start the radio normally and format the EEPROM when prompted
-4.	Start the Radio in Bootloader Mode using the “three finger boogie*”.
-5.	Flash the radio again with OpenTX companion (this will update the Firmware).
-
->  *”three finger boogie” = holding trim switches T4 and T1 to center while pushing the power button on.
 
 
