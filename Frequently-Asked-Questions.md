@@ -2,11 +2,8 @@
 
 **Will development for OpenTX stop?**
 
-No, there are no plans to stop developing OpenTX. Below is a quote by Kilrah from the OpenTX development team 
-> “The idea is not to stop developing OpenTX, but also not to risk breaking stuff that people use while introducing things most don't care about, yet not to slow down experimentation. There is quite a lot of legacy and large installed userbase we don't want to disappoint.
->  The plan is that EdgeTX will be where "experiments" with various stuff happen, and once done and validated if deemed worthy they get taken back into OpenTX with any necessary adjustments done to ensure OpenTX remains well stable. We'll see how this goes.”
+No, there are no plans to stop developing OpenTX. Select features from EdgeTX will also be added to OpenTX in the future as decided by the OpenTX development team.
 
-***
 
 **How do I install EdgeTX firmware?**
 
@@ -51,7 +48,7 @@ Basically, everything that is supported in OTX 2.3, minus 9X / 9XR-pro.
 
 **Does EdgeTX support the Flysky Nirvana NV14?**
 
-EdgeTX does not yet have an official release for the Flysky Nirvana NV14. However, we are actively working to fully support it. We have an early ALPHA version for testing available for installation in the Flasher nightly builds. We intend to have it fully supported in our next release.
+EdgeTX does not yet have an official release for the Flysky Nirvana NV14. However, we are actively working to fully support it. We have an early BETA version for testing available for installation in the Flasher nightly builds. We intend to have it fully supported in our next release.
 
 **Will EdgeTX follow the same versioning format as OpenTX?**
 
