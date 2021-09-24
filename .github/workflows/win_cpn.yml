@@ -95,7 +95,7 @@ jobs:
         with:
           vt_api_key: ${{ secrets.VT_API_KEY }}
           files: |
-            ./edgetx-cpn-win-${GITHUB_REF##*/}.zip
+            ${{github.workspace}}/output/edgetx-cpn-win-${GITHUB_REF##*/}.zip
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
