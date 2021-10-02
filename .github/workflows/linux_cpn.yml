@@ -5,6 +5,7 @@ on:
     branches:
       - '2.5'
       - 'main'
+      - 'build-appimage-poc'
     tags:
       - v*
     paths:
