@@ -29,7 +29,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 ## Flashing the EdgeTX Bootloader and Firmware
 
-1. Download the current EdgeTX firmware. You can download the latest release .zip file (edgetx-firmware-v2.4.0.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.4.0
+1. Download the current EdgeTX firmware. You can download the latest release .zip file (edgetx-firmware-v2.5.0.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.5.0
 
 2. Unzip the file and save the correct .bin file (same name as your radio type) to the "Firmware" folder on the SD card for your radio.
 
