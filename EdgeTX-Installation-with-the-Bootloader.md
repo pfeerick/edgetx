@@ -53,5 +53,11 @@ _**Note 1: The radio software may default to mode 1 stick configuration. If you 
 
 ## Installation Reference Videos
 
+[EdgeTX 2.5 means it's time to switch away from OpenTX. Here's how.](https://www.youtube.com/watch?v=shmse1VBiaA) - Joshua Bardwell
+
 [EdgeTX Bootloader Masterclass • Learn How to Flash Your Radio Like the Pros](https://youtu.be/LItyAkJlcdU) - RC Video Reviews
+
+[EdgeTX • How-To Migrate from OpenTX to EdgeTX and back to OpenTX](https://www.youtube.com/watch?v=PhpDf-j_3_Q) - RC Video Reviews
+
+[EdgeTX new cutting edge firmware for OpenTX radios](https://www.youtube.com/watch?v=7prdIFzm2D0) - Joshua Bardwell
 
