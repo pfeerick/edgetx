@@ -14,7 +14,7 @@ _Unfortunately, it is not possible to copy over the setup for your widgets from 
 
 > * horus.zip (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
 
-> * nv14.zip - FlySky Nirvana NV14 Note: this transmitter is not yet supported in EdgeTX 2.4.0 and is planned for future release 
+> * nv14.zip - FlySky Nirvana NV14
 
 > * taranis-x7.zip (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
 
@@ -52,6 +52,8 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 _**Note 1: The radio software may default to mode 1 stick configuration. If you have a mode 2 radio, you will most likely see a “Throttle Warning”. To fix this, go into the radio settings and change to mode 2.**_
 
 ## Installation Reference Videos
+
+[EdgeTX 2.5 means it's time to switch away from OpenTX. Here's how.](https://www.youtube.com/watch?v=shmse1VBiaA) - Joshua Bardwell
 
 [EdgeTX Bootloader Masterclass • Learn How to Flash Your Radio Like the Pros](https://youtu.be/LItyAkJlcdU) - RC Video Reviews
 
