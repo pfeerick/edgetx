@@ -14,7 +14,7 @@ _Unfortunately, it is not possible to copy over the setup for your widgets from 
 
 > * horus.zip (480x272 Horizontal Color Screen) - TX16s, T16, Horus x10s,Horus x12s, Most color screen radios...
 
-> * nv14.zip - FlySky Nirvana NV14 Note: this transmitter is not yet supported in EdgeTX 2.4.0 and is planned for future release 
+> * nv14.zip - FlySky Nirvana NV14 
 
 > * taranis-x7.zip (128x64 BW Screens) -T-Lite, QX7, X9 Lite, X-Lite, X-Lite Pro
 
