@@ -1,5 +1,5 @@
 ### A short summary of 5 ways to flash EdgeTX, first when looking from the point of flashing application used:
-1. **Use EdgeTX flasher** https://github.com/EdgeTX/flasher/releases
+1. **Use EdgeTX Buddy** https://buddy.edgetx.org/ or **EdgeTX flasher** https://github.com/EdgeTX/flasher/releases
    Benefit: easy to use, incorporates EdgeTX SD card creation. Can also be used when bootloader binary on radio is screwed up.
    Downside: Device-Firmware-Upgrade (DFU) mode only, under Windows need DFU drivers explicitly installed first.
 
@@ -7,7 +7,7 @@
    Benefit: can use DFU or bootloader mode. Flashing in DFU mode can also fix a "bricked" radio when bootloader does not run.
    Downside: need to untick "Check hardware compatibility" when flashing EdgeTX for now
 
-3. **Copy EdgeTX binary to SD card FIRMWARE subfolder** and use running OpenTX to flash the EdgeTX bootloader and then use EdgeTX bootloader to flash EdgeTX binary
+3. **Copy EdgeTX binary to SD card FIRMWARE subfolder** and use running OpenTX first to flash the EdgeTX bootloader and then use EdgeTX bootloader to flash EdgeTX binary
    Benefit: one of the most robust ways to flash, does not need any special drivers or software on your PC/Mac.
    Downside: two step process and your radio needs to at least run OpenTX. This method cannot be used to "un-brick" your radio if bootloader is damaged.
 
