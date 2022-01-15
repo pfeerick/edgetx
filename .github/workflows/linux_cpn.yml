@@ -47,7 +47,7 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
-          apt-get update && apt-get -q install libqt5multimedia5-plugins
+          apt-get update && apt-get -qy install libqt5multimedia5-plugins
           mkdir output && tools/build-companion-nightly.sh $(pwd) $(pwd)/output/
 
       - name: Compose release filename
