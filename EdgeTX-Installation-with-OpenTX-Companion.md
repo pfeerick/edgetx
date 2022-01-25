@@ -29,7 +29,7 @@ _Note: To import your models from OpenTX, copy your MODELS and RADIO folders alo
 
 ## Flashing the EdgeTX Bootloader and Firmware
 
-1. Download the current EdgeTX Firmware. You can download the release candidate build .zip file (edgetx-firmware-v2.4.0.zip) directly from Github -https://github.com/EdgeTX/edgetx/releases/tag/v2.5.0
+1. Download the current EdgeTX Firmware. You can download the firmware ZIP-file (edgetx-firmware-vX.X.X.zip) directly from Github - https://github.com/EdgeTX/edgetx/releases/latest
 
 2. Unzip the file and save the correct .bin file (same name as your radio type) to your computer.
 
@@ -55,5 +55,3 @@ _**Note 1: The radio software may default to mode 1 stick configuration. If you 
 5.	Flash the radio again with OpenTX companion (this will update the Firmware).
 
 >  *”three finger boogie” = holding trim switches T4 and T1 to center while pushing the power button on.
-
-
