@@ -72,9 +72,9 @@ jobs:
           python -m pip install clang
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@master
+        uses: jurplel/install-qt-action@96e5ea1
         with:
-          cached: true
+          cache: true
           cache-key-prefix: 'win64-QtCache'
           version: ${{ env.QT_VERSION }}
           arch: ${{ env.MINGW_VERSION }}
