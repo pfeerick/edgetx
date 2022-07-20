@@ -75,12 +75,12 @@ jobs:
         uses: jurplel/install-qt-action@96e5ea1bad2afbc4278b37752897e32486b890bf
         with:
           cache: true
-          cache-key-prefix: 'win64-QtCache'
+          cache-key-prefix: 'win64-QtCache-96e5ea1'
           version: ${{ env.QT_VERSION }}
           arch: ${{ env.MINGW_VERSION }}
 
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -97,7 +97,7 @@ jobs:
         run: echo "artifact_name=edgetx-cpn-win64-${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "${{ env.artifact_name }}"
           path:  ${{github.workspace}}/output
