@@ -71,17 +71,11 @@ jobs:
                                 mingw-w64-x86_64-nsis
           python -m pip install clang
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: win64-QtCache
-
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cached: true
+          cache-key-prefix: 'win64-QtCache'
           version: ${{ env.QT_VERSION }}
           arch: ${{ env.MINGW_VERSION }}
 
