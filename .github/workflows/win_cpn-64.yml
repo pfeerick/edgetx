@@ -23,11 +23,13 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  # use https://ddalcino.github.io/aqt-list-server/ match mingw, qt and aqt versions
   BUILD_TYPE: Release
   CMAKE_GENERATOR: "MSYS Makefiles"
   QT_VERSION: "5.15.2"
   MINGW_VERSION: "win64_mingw81"
   MINGW_PATH: "mingw81_64"
+  AQT_VERSION: "==3.1.*"
 
 jobs:
   build:
@@ -74,8 +76,11 @@ jobs:
         with:
           cache: true
           cache-key-prefix: 'install-qt-action-win64'
+          aqtversion: ${{ env.AQT_VERSION }}
           version: ${{ env.QT_VERSION }}
           arch: ${{ env.MINGW_VERSION }}
+          host: "windows"
+          target: "desktop"
 
       - name: Check out the repo
         uses: actions/checkout@v4
