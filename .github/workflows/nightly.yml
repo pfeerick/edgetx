@@ -80,7 +80,7 @@ jobs:
         with:
           args: zip -qq -j -r ${{ env.release_filename }} ./edgetx-firmware-nightly
 
-      - name: Create nightly tag
+      - name: Create/update nightly tag
         uses: actions/github-script@v7
         with:
           script: |
