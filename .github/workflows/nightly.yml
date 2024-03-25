@@ -80,11 +80,23 @@ jobs:
         with:
           args: zip -qq -j -r ${{ env.release_filename }} ./edgetx-firmware-nightly
 
-      - name: Deploy release
-        uses: marvinpinto/action-automatic-releases@latest
+      - name: Create nightly tag
+        uses: actions/github-script@v7
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: 'nightly'
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/nightly',
+              sha: context.sha
+            })
+
+      - name: Deploy nightly release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "Nightly"                      
+          generate_release_notes: true
           prerelease: true
           files: |
             *.zip
