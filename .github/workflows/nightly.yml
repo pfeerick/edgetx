@@ -85,11 +85,19 @@ jobs:
         with:
           script: |
             github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/nightly',
-              sha: context.sha
-            })
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'refs/tags/nightly',
+                sha: context.sha
+              }).catch(err => {
+                if (err.status !== 422) throw err;
+                github.rest.git.updateRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: 'tags/nightly',
+                  sha: context.sha
+                });
+              })
 
       - name: Deploy nightly release
         uses: softprops/action-gh-release@v2
