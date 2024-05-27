@@ -206,8 +206,8 @@ if [ "$(uname)" = "Darwin" ]; then
     cp native/*.dmg "${OUTDIR}"
 elif [ "$(uname)" = "Linux" ]; then
     cmake --build native -j"${JOBS}" --target package
+    chmod +x native/*.AppImage    
     cp native/*.AppImage "${OUTDIR}"
-    chmod +x "${OUTDIR}/*.AppImage"
 else
     cmake --build native --target installer
     cp native/companion/*.exe "${OUTDIR}"
