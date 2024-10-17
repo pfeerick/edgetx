@@ -176,7 +176,7 @@ inline int MAX_POTS_STORAGE(Board::Type board, int version)
 {
   if (version <= 218 && IS_FAMILY_HORUS_OR_T16(board))
     return 3;
-  if (version <= 220 && IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board))
+  if (version <= 220 && IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board))
     return 5;
   if (IS_FAMILY_T12(board))
     return 2;
@@ -216,7 +216,7 @@ inline int MAX_XPOTS(Board::Type board, int version)
 
 inline int MAX_SLIDERS_STORAGE(Board::Type board, int version)
 {
-  if (version >= 219 && (IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board)))
+  if (version >= 219 && (IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board)))
     return 4;
   //return Boards::getCapability(board, Board::Sliders);
   if (IS_HORUS_X12S(board) || IS_TARANIS_X9E(board))
@@ -264,7 +264,7 @@ inline int SWITCHES_CONFIG_SIZE(Board::Type board, int version)
 
 inline int MAX_MOUSE_ANALOG_SOURCES(Board::Type board, int version)
 {
-  if (IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board))
+  if (IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board))
     return 2;
   else
     return 0;
@@ -308,7 +308,7 @@ inline int MAX_TRIMS(Board::Type board)
 #define MAX_TELEMETRY_SENSORS(board, version) (version <= 218 ? 32 : ((IS_FAMILY_HORUS_OR_T16(board) || IS_TARANIS_X9(board) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board)) ? 60 : 40))
 #define NUM_PPM_INPUTS(board, version)        16
 #define ROTENC_COUNT(board, version)          ((IS_STM32(board) && version >= 218) ? 0 : 1)
-#define MAX_AUX_TRIMS(board)                  ((IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board)) ? 2 : 0)
+#define MAX_AUX_TRIMS(board)                  ((IS_FAMILY_HORUS_OR_T16(board) && !IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board)) ? 2 : 0)
 #define MAX_SOURCE_TYPE_SPECIAL(board, version)    SOURCE_TYPE_SPECIAL_COUNT
 #define MAX_TIMERS(board, version)            3
 
@@ -3069,7 +3069,7 @@ void OpenTxModelData::beforeExport()
 
   //  TODO remove when enum not radio specific requires eeprom change and conversion
   //  Note: this must mirror reverse afterImport
-  if (!IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board))
+  if (!IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board))
       modelData.trainerMode -= 1;
 
   if (modelData.trainerMode > TRAINER_MODE_SLAVE_JACK) {
@@ -3116,7 +3116,7 @@ void OpenTxModelData::afterImport()
 
   //  TODO remove when enum not radio specific requires eeprom change and conversion
   //  Note: this must mirror reverse beforeExport
-  if (!IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board))
+  if (!IS_FLYSKY_NV14(board) && !IS_FLYSKY_PL18(board) && !IS_FLYSKY_PL18EV(board))
       modelData.trainerMode += 1;
 
   if (modelData.trainerMode > TRAINER_MODE_SLAVE_JACK) {
@@ -3162,7 +3162,7 @@ OpenTxGeneralData::OpenTxGeneralData(GeneralSettings & generalData, Board::Type 
 
   internalField.Append(new UnsignedField<16>(this, chkSum));
 
-  if (!IS_FAMILY_HORUS_OR_T16(board) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board)) {
+  if (!IS_FAMILY_HORUS_OR_T16(board) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board) || IS_FLYSKY_PL18EV(board)) {
     internalField.Append(new UnsignedField<8>(this, generalData.currModelIndex));
     internalField.Append(new UnsignedField<8>(this, generalData.contrast));
   }
@@ -3226,11 +3226,11 @@ OpenTxGeneralData::OpenTxGeneralData(GeneralSettings & generalData, Board::Type 
   internalField.Append(new SignedField<8>(this, generalData.PPM_Multiplier));
   internalField.Append(new SignedField<8>(this, generalData.hapticLength));
 
-  if (version < 218 || (!IS_TARANIS(board) && !IS_FAMILY_HORUS_OR_T16(board)) || IS_FLYSKY_NV14(board)  || IS_FLYSKY_PL18(board)) {
+  if (version < 218 || (!IS_TARANIS(board) && !IS_FAMILY_HORUS_OR_T16(board)) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board) || IS_FLYSKY_PL18EV(board)) {
     internalField.Append(new UnsignedField<8>(this, generalData.reNavigation));
   }
 
-  if ((!IS_TARANIS(board) && !IS_FAMILY_HORUS_OR_T16(board)) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board)) {
+  if ((!IS_TARANIS(board) && !IS_FAMILY_HORUS_OR_T16(board)) || IS_FLYSKY_NV14(board) || IS_FLYSKY_PL18(board) || IS_FLYSKY_PL18EV(board)) {
     internalField.Append(new UnsignedField<8>(this, generalData.stickReverse));
   }
 
