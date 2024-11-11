@@ -37,12 +37,12 @@ jobs:
         with:
           msystem: MINGW32
           update: true
-          install: git make curl tar mingw-w64-i686-toolchain
+          install: git make curl tar mingw-w64-i686-toolchain mingw-w64-i686-python-pip
 
       - name: Install Dependencies
         run: |
+          python -m pip install setuptools
           pacman -S --noconfirm mingw-w64-i686-cmake \
-                                mingw-w64-i686-python-pip \
                                 mingw-w64-i686-python-pillow \
                                 mingw-w64-i686-libjpeg-turbo \
                                 mingw-w64-i686-zlib \
