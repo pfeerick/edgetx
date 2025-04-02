@@ -4,8 +4,8 @@ include(FetchContent)
 
 FetchContent_Declare(
   miniz
-  GIT_REPOSITORY https://github.com/richgel999/miniz
-  GIT_TAG        293d4db1b7d0ffee9756d035b9ac6f7431ef8492 # v3.0.2
+  GIT_REPOSITORY https://github.com/pfeerick/miniz/
+  GIT_TAG        8061c01970016f60eba4e4c563aab09290523878
 )
 
 FetchContent_MakeAvailable(miniz)
