@@ -4,8 +4,8 @@ include(FetchContent)
 
 FetchContent_Declare(
   yaml-cpp
-  GIT_REPOSITORY https://github.com/gruenich/yaml-cpp
-  GIT_TAG        fac0bd8eb5c4972f4284ddebd20c5facb47a32e5
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp
+  GIT_TAG        28f93bdec6387d42332220afa9558060c8016795
 )
 
 FetchContent_MakeAvailable(yaml-cpp)
