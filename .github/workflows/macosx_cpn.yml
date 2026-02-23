@@ -21,13 +21,21 @@ on:
   workflow_dispatch:
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   QT_VERSION: "6.9.3"
 
 jobs:
   build:
-    runs-on: macos-15-intel
+    strategy:
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x86_64
+            cache-suffix: intel
+          - runner: macos-15
+            arch: arm64
+            cache-suffix: arm64
+    runs-on: ${{ matrix.runner }}
     if: |
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
@@ -48,8 +56,6 @@ jobs:
           python-version: '3.12'
 
       - name: Create Build Environment
-        # Some projects don't allow in-source building, so create a separate build directory
-        # We'll use this as our working directory for all subsequent commands
         run: cmake -E make_directory ${{github.workspace}}/build
 
       - name: Install Qt
@@ -61,13 +67,13 @@ jobs:
           modules: 'qtmultimedia qtserialport'
           setup-python: 'false'
           cache: true
-          cache-key-prefix: 'install-qt-action-macOS'
+          cache-key-prefix: 'install-qt-action-macOS-${{ matrix.cache-suffix }}'
 
       - name: Install dependencies
         run: python3 -m pip install --upgrade pip Pillow lz4 clang jinja2
 
       - name: Install SDL2
-        run:  brew install SDL2
+        run: brew install SDL2
 
       - name: Build
         working-directory: ${{github.workspace}}
@@ -82,10 +88,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          # Create logs directory if it doesn't exist
           mkdir -p logs
-          
-          # Copy all build logs from the build directory
           if [ -d "build" ]; then
             find build -name "*.log" -type f -exec cp {} logs/ \; 2>/dev/null || true
             find build -name "CMakeOutput.log" -type f -exec cp {} logs/ \; 2>/dev/null || true
@@ -94,16 +97,15 @@ jobs:
 
       - name: Compose release filename
         if: always()
-        # https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
-        run: echo "artifact_name=edgetx-cpn-osx-${GITHUB_REF##*/}" >> $GITHUB_ENV
+        run: echo "artifact_name=edgetx-cpn-osx-${{ matrix.arch }}-${GITHUB_REF##*/}" >> $GITHUB_ENV
 
       - name: Archive production artifacts
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: "${{ env.artifact_name }}"
-          path:  ${{github.workspace}}/output
-          retention-days: 15
+          path: ${{github.workspace}}/output
+          retention-days: 1  # Short retention, only needed for the universal job
 
       - name: Archive build logs
         if: always()
@@ -112,3 +114,85 @@ jobs:
           name: "${{ env.artifact_name }}-logs"
           path: ${{github.workspace}}/logs
           retention-days: 30
+
+  universal:
+    needs: build
+    runs-on: macos-15
+    if: |
+      github.event_name != 'pull_request' ||
+      !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
+    steps:
+      - name: Compose release filename base
+        run: echo "artifact_base=edgetx-cpn-osx-${GITHUB_REF##*/}" >> $GITHUB_ENV
+
+      - name: Download x86_64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "edgetx-cpn-osx-x86_64-${GITHUB_REF##*/}"
+          path: output-x86_64
+
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: "edgetx-cpn-osx-arm64-${GITHUB_REF##*/}"
+          path: output-arm64
+
+      - name: Create universal binaries with lipo
+        shell: bash
+        run: |
+          mkdir -p output-universal
+
+          # Find all .app bundles in the x86_64 output and process them
+          find output-x86_64 -name "*.app" -type d | while read app_x86; do
+            app_name=$(basename "$app_x86")
+            app_arm="output-arm64/${app_name}"
+            app_out="output-universal/${app_name}"
+
+            if [ ! -d "$app_arm" ]; then
+              echo "Warning: No arm64 counterpart for $app_name, copying x86_64 only"
+              cp -R "$app_x86" "$app_out"
+              continue
+            fi
+
+            # Copy the x86_64 app as a base (preserves structure, plists, resources)
+            cp -R "$app_x86" "$app_out"
+
+            # Find all Mach-O executables/dylibs in the app and lipo them
+            find "$app_x86" -type f | while read f_x86; do
+              rel="${f_x86#$app_x86/}"
+              f_arm="$app_arm/$rel"
+              f_out="$app_out/$rel"
+
+              if [ -f "$f_arm" ] && file "$f_x86" | grep -qE 'Mach-O'; then
+                lipo -create "$f_x86" "$f_arm" -output "$f_out"
+              fi
+            done
+          done
+
+          # Handle any loose binaries/dmg/zip files that aren't .app bundles
+          find output-x86_64 -maxdepth 1 -not -name "*.app" -type f | while read f_x86; do
+            fname=$(basename "$f_x86")
+            f_arm="output-arm64/$fname"
+            if [ -f "$f_arm" ] && file "$f_x86" | grep -qE 'Mach-O'; then
+              lipo -create "$f_x86" "$f_arm" -output "output-universal/$fname"
+            elif [ -f "$f_arm" ]; then
+              cp "$f_x86" "output-universal/$fname"
+            fi
+          done
+
+      - name: Verify universal binaries
+        shell: bash
+        run: |
+          find output-universal -type f | while read f; do
+            if file "$f" | grep -qE 'Mach-O'; then
+              echo "=== $f ==="
+              lipo -info "$f"
+            fi
+          done
+
+      - name: Archive universal artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "edgetx-cpn-osx-universal-${GITHUB_REF##*/}"
+          path: output-universal
+          retention-days: 15
