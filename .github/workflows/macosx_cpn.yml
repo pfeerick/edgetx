@@ -186,6 +186,13 @@ jobs:
             fi
           done
 
+      - name: Ad-hoc code sign universal binaries
+        shell: bash
+        run: |
+          find output-universal -name "*.app" -type d | while read app; do
+            codesign --force --deep --sign - "$app"
+          done
+
       - name: Verify universal binaries
         shell: bash
         run: |
