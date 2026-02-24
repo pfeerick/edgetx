@@ -146,45 +146,39 @@ jobs:
       - name: Create universal binaries with lipo
         shell: bash
         run: |
-          mkdir -p output-universal
+          mkdir -p /tmp/app-universal
 
-          # Find all .app bundles in the x86_64 output and process them
-          find output-x86_64 -name "*.app" -type d | while read app_x86; do
-            app_name=$(basename "$app_x86")
-            app_arm="output-arm64/${app_name}"
-            app_out="output-universal/${app_name}"
+          # Mount both DMGs
+          hdiutil attach output-x86_64/edgetx-companion-*.dmg -mountpoint /tmp/dmg-x86_64 -nobrowse -quiet
+          hdiutil attach output-arm64/edgetx-companion-*.dmg -mountpoint /tmp/dmg-arm64 -nobrowse -quiet
 
-            if [ ! -d "$app_arm" ]; then
-              echo "Warning: No arm64 counterpart for $app_name, copying x86_64 only"
-              cp -R "$app_x86" "$app_out"
-              continue
-            fi
+          # Get app name from mounted volume
+          APP_NAME=$(ls /tmp/dmg-x86_64/ | grep "\.app$" | head -1)
 
-            # Copy the x86_64 app as a base (preserves structure, plists, resources)
-            cp -R "$app_x86" "$app_out"
+          # Copy x86_64 app as base
+          cp -R "/tmp/dmg-x86_64/${APP_NAME}" /tmp/app-universal/
 
-            # Find all Mach-O executables/dylibs in the app and lipo them
-            find "$app_x86" -type f | while read f_x86; do
-              rel="${f_x86#$app_x86/}"
-              f_arm="$app_arm/$rel"
-              f_out="$app_out/$rel"
+          # Lipo all Mach-O files
+          find "/tmp/dmg-x86_64/${APP_NAME}" -type f | while read f_x86; do
+            rel="${f_x86#/tmp/dmg-x86_64/${APP_NAME}/}"
+            f_arm="/tmp/dmg-arm64/${APP_NAME}/${rel}"
+            f_out="/tmp/app-universal/${APP_NAME}/${rel}"
 
-              if [ -f "$f_arm" ] && file "$f_x86" | grep -qE 'Mach-O'; then
-                lipo -create "$f_x86" "$f_arm" -output "$f_out"
-              fi
-            done
-          done
-
-          # Handle any loose binaries/dmg/zip files that aren't .app bundles
-          find output-x86_64 -maxdepth 1 -not -name "*.app" -type f | while read f_x86; do
-            fname=$(basename "$f_x86")
-            f_arm="output-arm64/$fname"
             if [ -f "$f_arm" ] && file "$f_x86" | grep -qE 'Mach-O'; then
-              lipo -create "$f_x86" "$f_arm" -output "output-universal/$fname"
-            elif [ -f "$f_arm" ]; then
-              cp "$f_x86" "output-universal/$fname"
+              lipo -create "$f_x86" "$f_arm" -output "$f_out"
             fi
           done
+
+          # Detach DMGs
+          hdiutil detach /tmp/dmg-x86_64 -quiet
+          hdiutil detach /tmp/dmg-arm64 -quiet
+
+          # Get version from DMG filename for output naming
+          DMG_NAME=$(ls output-x86_64/edgetx-companion-*.dmg | xargs basename | sed 's/\.dmg/-universal.dmg/')
+          hdiutil create -volname "${APP_NAME%.app}" \
+            -srcfolder /tmp/app-universal \
+            -ov -format UDZO \
+            "output-universal/${DMG_NAME}"
 
       - name: Ad-hoc code sign universal binaries
         shell: bash
