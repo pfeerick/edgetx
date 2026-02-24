@@ -1,24 +1,30 @@
 name: MacOSX Companion
 
 on:
-  push:
-    branches:
-      - 'main'
-      - '[0-9]+.[0-9]+'
-    tags:
-      - v*
-    paths: &trigger-paths
-      - '.github/workflows/macosx_cpn.yml'
-      - 'companion/**'
-      - 'tools/build-companion.sh'
+  # auto triggers disabled while universal job is being debugged.
+  # push:
+  #   branches:
+  #     - 'main'
+  #     - '[0-9]+.[0-9]+'
+  #   tags:
+  #     - v*
+  #   paths: &trigger-paths
+  #     - '.github/workflows/macosx_cpn.yml'
+  #     - 'companion/**'
+  #     - 'tools/build-companion.sh'
 
-  pull_request:
-    branches:
-      - 'main'
-      - '[0-9]+.[0-9]+'
-    paths: *trigger-paths
+  # pull_request:
+  #   branches:
+  #     - 'main'
+  #     - '[0-9]+.[0-9]+'
+  #   paths: *trigger-paths
 
   workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: 'Optional: prior workflow run ID to reuse build artifacts and run universal job only'
+        required: false
+        type: string
 
 env:
   BUILD_TYPE: Release
@@ -37,8 +43,14 @@ jobs:
             cache-suffix: arm64
     runs-on: ${{ matrix.runner }}
     if: |
-      github.event_name != 'pull_request' ||
-      !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
+      (
+        github.event_name != 'pull_request' ||
+        !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
+      ) &&
+      (
+        github.event_name != 'workflow_dispatch' ||
+        github.event.inputs.source_run_id == ''
+      )
     steps:
       - name: Select XCode version
         uses: maxim-lobanov/setup-xcode@v1
@@ -108,7 +120,7 @@ jobs:
         with:
           name: "${{ env.artifact_name }}"
           path: ${{github.workspace}}/output
-          retention-days: 1  # Short retention, only needed for the universal job
+          retention-days: 3  # Short retention, only needed for the universal job
 
       - name: Archive build logs
         if: always()
@@ -122,31 +134,86 @@ jobs:
     needs: build
     runs-on: macos-15
     if: |
-      github.event_name != 'pull_request' ||
-      !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
+      (
+        github.event_name != 'pull_request' ||
+        !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
+      ) &&
+      (
+        needs.build.result == 'success' ||
+        (github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != '')
+      )
     steps:
       - name: Compose artifact ref
         shell: bash
         run: |
           artifact_ref=$(printf '%s' "${GITHUB_REF_NAME}" | sed 's#/#-#g')
           echo "artifact_ref=${artifact_ref}" >> "$GITHUB_ENV"
+          echo "source_run_id=${{ github.event.inputs.source_run_id }}" >> "$GITHUB_ENV"
+          if [ -n "${{ github.event.inputs.source_run_id }}" ]; then
+            echo "Universal build mode: reuse artifacts from run_id=${{ github.event.inputs.source_run_id }}"
+          else
+            echo "Universal build mode: use artifacts from current workflow run"
+          fi
 
-      - name: Download x86_64 artifact
+      - name: Download x86_64 artifact (current run)
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == ''
         uses: actions/download-artifact@v4
         with:
           name: "edgetx-cpn-osx-x86_64-${{ env.artifact_ref }}"
           path: output-x86_64
 
-      - name: Download arm64 artifact
+      - name: Download x86_64 artifact (from source run)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.inputs.source_run_id }}
+          pattern: "edgetx-cpn-osx-x86_64-*"
+          merge-multiple: true
+          path: output-x86_64
+
+      - name: Download arm64 artifact (current run)
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == ''
         uses: actions/download-artifact@v4
         with:
           name: "edgetx-cpn-osx-arm64-${{ env.artifact_ref }}"
+          path: output-arm64
+
+      - name: Download arm64 artifact (from source run)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ github.event.inputs.source_run_id }}
+          pattern: "edgetx-cpn-osx-arm64-*"
+          merge-multiple: true
           path: output-arm64
 
       - name: Create universal binaries with lipo
         shell: bash
         run: |
           set -euo pipefail
+
+          on_error() {
+            local exit_code=$?
+            local line_no=${BASH_LINENO[0]:-unknown}
+            local cmd=${BASH_COMMAND:-unknown}
+            echo "::error::Create universal binaries failed at line ${line_no}: ${cmd} (exit ${exit_code})"
+            echo "--- output-x86_64 files ---"
+            find output-x86_64 -maxdepth 4 -print 2>/dev/null || true
+            echo "--- output-arm64 files ---"
+            find output-arm64 -maxdepth 4 -print 2>/dev/null || true
+            echo "--- /tmp/dmg-x86_64 contents ---"
+            ls -la /tmp/dmg-x86_64 2>/dev/null || true
+            echo "--- /tmp/dmg-arm64 contents ---"
+            ls -la /tmp/dmg-arm64 2>/dev/null || true
+            echo "--- /tmp/app-universal contents ---"
+            find /tmp/app-universal -maxdepth 4 -print 2>/dev/null || true
+            return "${exit_code}"
+          }
+          trap on_error ERR
 
           mkdir -p /tmp/app-universal /tmp/dmg-x86_64 /tmp/dmg-arm64 output-universal
 
@@ -155,6 +222,10 @@ jobs:
             hdiutil detach /tmp/dmg-arm64 -quiet 2>/dev/null || true
           }
           trap cleanup EXIT
+
+          echo "Discovering input artifacts..."
+          echo "output-x86_64 layout:" && find output-x86_64 -maxdepth 3 -print || true
+          echo "output-arm64 layout:" && find output-arm64 -maxdepth 3 -print || true
 
           X86_DMG=$(find output-x86_64 -name 'edgetx-companion-*.dmg' -print -quit)
           ARM_DMG=$(find output-arm64 -name 'edgetx-companion-*.dmg' -print -quit)
@@ -165,9 +236,15 @@ jobs:
             exit 1
           fi
 
+          echo "x86_64 DMG: ${X86_DMG}"
+          echo "arm64 DMG: ${ARM_DMG}"
+
           # Mount both DMGs
-          hdiutil attach "${X86_DMG}" -mountpoint /tmp/dmg-x86_64 -nobrowse -quiet
-          hdiutil attach "${ARM_DMG}" -mountpoint /tmp/dmg-arm64 -nobrowse -quiet
+          hdiutil attach "${X86_DMG}" -mountpoint /tmp/dmg-x86_64 -nobrowse
+          hdiutil attach "${ARM_DMG}" -mountpoint /tmp/dmg-arm64 -nobrowse
+
+          echo "Mounted x86_64 DMG:" && ls -la /tmp/dmg-x86_64
+          echo "Mounted arm64 DMG:" && ls -la /tmp/dmg-arm64
 
           # Get app name from mounted volume
           APP_PATH_X86=$(find /tmp/dmg-x86_64 -maxdepth 1 -name '*.app' -type d -print -quit)
@@ -176,20 +253,60 @@ jobs:
             exit 1
           fi
           APP_NAME=$(basename "${APP_PATH_X86}")
+          APP_PATH_ARM="/tmp/dmg-arm64/${APP_NAME}"
+          if [ ! -d "${APP_PATH_ARM}" ]; then
+            echo "Matching app not found in arm64 DMG: ${APP_PATH_ARM}"
+            echo "Available arm64 apps:"
+            find /tmp/dmg-arm64 -maxdepth 1 -name '*.app' -type d -print || true
+            exit 1
+          fi
 
           # Copy x86_64 app as base
           cp -R "${APP_PATH_X86}" /tmp/app-universal/
 
           # Lipo all Mach-O files
+          merged_count=0
+          skipped_count=0
+          missing_count=0
           find "${APP_PATH_X86}" -type f -print0 | while IFS= read -r -d '' f_x86; do
             rel="${f_x86#${APP_PATH_X86}/}"
-            f_arm="/tmp/dmg-arm64/${APP_NAME}/${rel}"
+            f_arm="${APP_PATH_ARM}/${rel}"
             f_out="/tmp/app-universal/${APP_NAME}/${rel}"
 
-            if [ -f "${f_arm}" ] && file "${f_x86}" | grep -qE 'Mach-O'; then
-              lipo -create "${f_x86}" "${f_arm}" -output "${f_out}"
+            if ! file "${f_x86}" | grep -qE 'Mach-O'; then
+              skipped_count=$((skipped_count + 1))
+              continue
             fi
+
+            if [ ! -f "${f_arm}" ]; then
+              echo "Missing arm64 counterpart for: ${rel}"
+              missing_count=$((missing_count + 1))
+              continue
+            fi
+
+            if ! file "${f_arm}" | grep -qE 'Mach-O'; then
+              echo "Non-Mach-O arm64 counterpart for: ${rel}"
+              skipped_count=$((skipped_count + 1))
+              continue
+            fi
+
+            if ! lipo -create "${f_x86}" "${f_arm}" -output "${f_out}"; then
+              echo "::error::lipo failed for ${rel}"
+              echo "x86_64: $(file "${f_x86}")"
+              echo "arm64:  $(file "${f_arm}")"
+              lipo -info "${f_x86}" || true
+              lipo -info "${f_arm}" || true
+              exit 1
+            fi
+
+            merged_count=$((merged_count + 1))
           done
+
+          echo "Lipo merge summary: merged=${merged_count}, skipped_non_macho=${skipped_count}, missing_counterparts=${missing_count}"
+          if [ "${merged_count}" -eq 0 ]; then
+            echo "::error::No Mach-O binaries were merged"
+            exit 1
+          fi
 
           # Persist names for later steps
           DMG_NAME=$(basename "${X86_DMG}")
