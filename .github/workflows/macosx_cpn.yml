@@ -146,56 +146,85 @@ jobs:
       - name: Create universal binaries with lipo
         shell: bash
         run: |
-          mkdir -p /tmp/app-universal
+          set -euo pipefail
+
+          mkdir -p /tmp/app-universal /tmp/dmg-x86_64 /tmp/dmg-arm64 output-universal
+
+          cleanup() {
+            hdiutil detach /tmp/dmg-x86_64 -quiet 2>/dev/null || true
+            hdiutil detach /tmp/dmg-arm64 -quiet 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          X86_DMG=$(find output-x86_64 -name 'edgetx-companion-*.dmg' -print -quit)
+          ARM_DMG=$(find output-arm64 -name 'edgetx-companion-*.dmg' -print -quit)
+
+          if [ -z "${X86_DMG}" ] || [ -z "${ARM_DMG}" ]; then
+            echo "Could not find input DMGs in downloaded artifacts"
+            find output-x86_64 output-arm64 -maxdepth 3 -type f || true
+            exit 1
+          fi
 
           # Mount both DMGs
-          hdiutil attach output-x86_64/edgetx-companion-*.dmg -mountpoint /tmp/dmg-x86_64 -nobrowse -quiet
-          hdiutil attach output-arm64/edgetx-companion-*.dmg -mountpoint /tmp/dmg-arm64 -nobrowse -quiet
+          hdiutil attach "${X86_DMG}" -mountpoint /tmp/dmg-x86_64 -nobrowse -quiet
+          hdiutil attach "${ARM_DMG}" -mountpoint /tmp/dmg-arm64 -nobrowse -quiet
 
           # Get app name from mounted volume
-          APP_NAME=$(ls /tmp/dmg-x86_64/ | grep "\.app$" | head -1)
+          APP_PATH_X86=$(find /tmp/dmg-x86_64 -maxdepth 1 -name '*.app' -type d -print -quit)
+          if [ -z "${APP_PATH_X86}" ]; then
+            echo "No .app found inside x86_64 DMG"
+            exit 1
+          fi
+          APP_NAME=$(basename "${APP_PATH_X86}")
 
           # Copy x86_64 app as base
-          cp -R "/tmp/dmg-x86_64/${APP_NAME}" /tmp/app-universal/
+          cp -R "${APP_PATH_X86}" /tmp/app-universal/
 
           # Lipo all Mach-O files
-          find "/tmp/dmg-x86_64/${APP_NAME}" -type f | while read f_x86; do
-            rel="${f_x86#/tmp/dmg-x86_64/${APP_NAME}/}"
+          find "${APP_PATH_X86}" -type f -print0 | while IFS= read -r -d '' f_x86; do
+            rel="${f_x86#${APP_PATH_X86}/}"
             f_arm="/tmp/dmg-arm64/${APP_NAME}/${rel}"
             f_out="/tmp/app-universal/${APP_NAME}/${rel}"
 
-            if [ -f "$f_arm" ] && file "$f_x86" | grep -qE 'Mach-O'; then
-              lipo -create "$f_x86" "$f_arm" -output "$f_out"
+            if [ -f "${f_arm}" ] && file "${f_x86}" | grep -qE 'Mach-O'; then
+              lipo -create "${f_x86}" "${f_arm}" -output "${f_out}"
             fi
           done
 
-          # Detach DMGs
-          hdiutil detach /tmp/dmg-x86_64 -quiet
-          hdiutil detach /tmp/dmg-arm64 -quiet
-
-          # Get version from DMG filename for output naming
-          DMG_NAME=$(ls output-x86_64/edgetx-companion-*.dmg | xargs basename | sed 's/\.dmg/-universal.dmg/')
-          hdiutil create -volname "${APP_NAME%.app}" \
-            -srcfolder /tmp/app-universal \
-            -ov -format UDZO \
-            "output-universal/${DMG_NAME}"
+          # Persist names for later steps
+          DMG_NAME=$(basename "${X86_DMG}")
+          DMG_NAME="${DMG_NAME%.dmg}-universal.dmg"
+          echo "app_name=${APP_NAME}" >> "$GITHUB_ENV"
+          echo "universal_dmg_name=${DMG_NAME}" >> "$GITHUB_ENV"
 
       - name: Ad-hoc code sign universal binaries
         shell: bash
         run: |
-          find output-universal -name "*.app" -type d | while read app; do
-            codesign --force --deep --sign - "$app"
+          find /tmp/app-universal -name "*.app" -type d | while read app; do
+            codesign --force --deep --sign - --timestamp=none "$app"
+            codesign --verify --deep --strict "$app"
           done
 
       - name: Verify universal binaries
         shell: bash
         run: |
-          find output-universal -type f | while read f; do
+          find "/tmp/app-universal/${{ env.app_name }}" -type f | while read f; do
             if file "$f" | grep -qE 'Mach-O'; then
               echo "=== $f ==="
               lipo -info "$f"
+              lipo -info "$f" | grep -q 'x86_64'
+              lipo -info "$f" | grep -q 'arm64'
             fi
           done
+
+      - name: Package universal DMG
+        shell: bash
+        run: |
+          mkdir -p output-universal
+          hdiutil create -volname "${{ env.app_name }}" \
+            -srcfolder /tmp/app-universal \
+            -ov -format UDZO \
+            "output-universal/${{ env.universal_dmg_name }}"
 
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4
