@@ -97,7 +97,10 @@ jobs:
 
       - name: Compose release filename
         if: always()
-        run: echo "artifact_name=edgetx-cpn-osx-${{ matrix.arch }}-${{ github.ref_name }}" >> $GITHUB_ENV
+        shell: bash
+        run: |
+          artifact_ref=$(printf '%s' "${GITHUB_REF_NAME}" | sed 's#/#-#g')
+          echo "artifact_name=edgetx-cpn-osx-${{ matrix.arch }}-${artifact_ref}" >> "$GITHUB_ENV"
 
       - name: Archive production artifacts
         if: success()
@@ -122,19 +125,22 @@ jobs:
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
     steps:
-      - name: Compose release filename base
-        run: echo "artifact_base=edgetx-cpn-osx-${{ github.ref_name }}" >> $GITHUB_ENV
+      - name: Compose artifact ref
+        shell: bash
+        run: |
+          artifact_ref=$(printf '%s' "${GITHUB_REF_NAME}" | sed 's#/#-#g')
+          echo "artifact_ref=${artifact_ref}" >> "$GITHUB_ENV"
 
       - name: Download x86_64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: "edgetx-cpn-osx-x86_64-${{ github.ref_name }}"
+          name: "edgetx-cpn-osx-x86_64-${{ env.artifact_ref }}"
           path: output-x86_64
 
       - name: Download arm64 artifact
         uses: actions/download-artifact@v4
         with:
-          name: "edgetx-cpn-osx-arm64-${{ github.ref_name }}"
+          name: "edgetx-cpn-osx-arm64-${{ env.artifact_ref }}"
           path: output-arm64
 
       - name: Create universal binaries with lipo
@@ -193,6 +199,6 @@ jobs:
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4
         with:
-          name: "edgetx-cpn-osx-universal-${{ github.ref_name }}"
+          name: "edgetx-cpn-osx-universal-${{ env.artifact_ref }}"
           path: output-universal
           retention-days: 15
