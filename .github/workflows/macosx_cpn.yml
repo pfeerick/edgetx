@@ -435,8 +435,29 @@ jobs:
             exit 1
           fi
 
+          attach_dmg_ci() {
+            local dmg_path="$1"
+            local mount_point="$2"
+            local rc=1
+
+            if hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"; then
+              return 0
+            fi
+
+            echo "Attach retry with non-interactive license acceptance"
+            set +o pipefail
+            yes | hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"
+            rc=${PIPESTATUS[1]:-1}
+            set -o pipefail
+
+            if [ "${rc}" -ne 0 ]; then
+              echo "::error::Failed to attach DMG: ${dmg_path}"
+              return "${rc}"
+            fi
+          }
+
           echo "Verifying app signature inside packaged DMG"
-          hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${VERIFY_MOUNT}" "${DMG_FILE}"
+          attach_dmg_ci "${DMG_FILE}" "${VERIFY_MOUNT}"
           DMG_APP_PATH=$(find "${VERIFY_MOUNT}" -maxdepth 1 -name '*.app' -type d -print -quit)
           if [ -z "${DMG_APP_PATH}" ]; then
             echo "::error::No .app found in packaged DMG"
