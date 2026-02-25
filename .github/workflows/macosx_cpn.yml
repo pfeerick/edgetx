@@ -262,12 +262,19 @@ jobs:
             local label="$3"
 
             echo "Attaching ${label} DMG at ${mount_point}"
-            if ! hdiutil attach "${dmg_path}" -mountpoint "${mount_point}" -nobrowse -readonly -acceptlicense; then
-              echo "::error::Failed to attach ${label} DMG: ${dmg_path}"
-              echo "${label} DMG imageinfo:"
-              hdiutil imageinfo "${dmg_path}" || true
-              exit 1
+            if hdiutil attach -nobrowse -readonly -acceptlicense -mountpoint "${mount_point}" "${dmg_path}"; then
+              return 0
             fi
+
+            echo "Initial attach failed for ${label}; retrying with piped license acceptance"
+            if yes | hdiutil attach -nobrowse -readonly -acceptlicense -mountpoint "${mount_point}" "${dmg_path}"; then
+              return 0
+            fi
+
+            echo "::error::Failed to attach ${label} DMG: ${dmg_path}"
+            echo "${label} DMG imageinfo:"
+            hdiutil imageinfo "${dmg_path}" || true
+            exit 1
           }
 
           attach_dmg "${X86_DMG}" /tmp/dmg-x86_64 x86_64
