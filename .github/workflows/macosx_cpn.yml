@@ -394,8 +394,11 @@ jobs:
           fi
 
           CPACK_PROJECT_DIR="/tmp/universal-dmg-cpack"
+          CPACK_OUTPUT_DIR="/tmp/universal-dmg-output"
           rm -rf "${CPACK_PROJECT_DIR}"
+          rm -rf "${CPACK_OUTPUT_DIR}"
           mkdir -p "${CPACK_PROJECT_DIR}"
+          mkdir -p "${CPACK_OUTPUT_DIR}"
 
           APP_ESCAPED="${UNIVERSAL_APP//\"/\\\"}"
           LICENSE_FILE="${GITHUB_WORKSPACE}/LICENSE"
@@ -415,11 +418,22 @@ jobs:
           EOF
 
           cmake -S "${CPACK_PROJECT_DIR}" -B "${CPACK_PROJECT_DIR}/build"
-          cpack --config "${CPACK_PROJECT_DIR}/build/CPackConfig.cmake" -B output-universal
+          cpack --config "${CPACK_PROJECT_DIR}/build/CPackConfig.cmake" -B "${CPACK_OUTPUT_DIR}"
+
+          DMG_FILE=$(find "${CPACK_OUTPUT_DIR}" -maxdepth 2 -name "${{ env.universal_dmg_name }}.dmg" -type f -print -quit)
+          if [ -z "${DMG_FILE}" ]; then
+            echo "::error::Universal DMG not found after cpack"
+            find "${CPACK_OUTPUT_DIR}" -maxdepth 4 -print || true
+            exit 1
+          fi
+
+          cp "${DMG_FILE}" output-universal/
 
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4
         with:
           name: "edgetx-cpn-osx-universal-${{ env.artifact_ref }}"
-          path: output-universal
+          path: output-universal/*.dmg
+          compression-level: 0
+          if-no-files-found: error
           retention-days: 15
