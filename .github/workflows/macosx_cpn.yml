@@ -431,10 +431,15 @@ jobs:
 
           RW_DMG="/tmp/edgetx-universal-template-rw.dmg"
           TEMPLATE_MOUNT="/tmp/dmg-template-universal"
+          TEMPLATE_REZ_XML="/tmp/edgetx-template-rez.xml"
+          UNIVERSAL_REZ_XML="/tmp/edgetx-universal-rez.xml"
+          MERGED_REZ_XML="/tmp/edgetx-universal-rez-merged.xml"
+          UNIVERSAL_DMG="output-universal/${{ env.universal_dmg_name }}"
 
           cleanup_package() {
             hdiutil detach "${TEMPLATE_MOUNT}" -quiet 2>/dev/null || true
             rm -f "${RW_DMG}"
+            rm -f "${TEMPLATE_REZ_XML}" "${UNIVERSAL_REZ_XML}" "${MERGED_REZ_XML}"
           }
           trap cleanup_package EXIT
 
@@ -474,7 +479,15 @@ jobs:
 
           hdiutil detach "${TEMPLATE_MOUNT}" -quiet
 
-          hdiutil convert "${RW_DMG}" -format UDZO -o "output-universal/${{ env.universal_dmg_name }}"
+          hdiutil convert "${RW_DMG}" -format UDZO -o "${UNIVERSAL_DMG}"
+
+          # Preserve template DMG resources (including SLA) while keeping universal blkx map intact
+          hdiutil udifderez -xml "${TEMPLATE_DMG}" > "${TEMPLATE_REZ_XML}"
+          hdiutil udifderez -xml "${UNIVERSAL_DMG}" > "${UNIVERSAL_REZ_XML}"
+
+          python3 -c 'import plistlib; t=plistlib.load(open("/tmp/edgetx-template-rez.xml","rb")); u=plistlib.load(open("/tmp/edgetx-universal-rez.xml","rb")); tr=t.get("resource-fork",{}); ur=u.get("resource-fork",{}); [ur.__setitem__(k,v) for k,v in tr.items() if k!="blkx"]; u["resource-fork"]=ur; plistlib.dump(u, open("/tmp/edgetx-universal-rez-merged.xml","wb"))'
+
+          hdiutil udifrez "${UNIVERSAL_DMG}" -xml "${MERGED_REZ_XML}" -replaceall
 
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4
