@@ -338,6 +338,11 @@ jobs:
               exit 1
             fi
 
+            src_mode=$(stat -f '%Lp' "${f_x86}" 2>/dev/null || true)
+            if [ -n "${src_mode}" ]; then
+              chmod "${src_mode}" "${f_out}" || true
+            fi
+
             merged_count=$((merged_count + 1))
           done < <(find "${APP_PATH_X86}" -type f -print0)
 
