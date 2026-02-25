@@ -395,10 +395,18 @@ jobs:
 
           CPACK_PROJECT_DIR="/tmp/universal-dmg-cpack"
           CPACK_OUTPUT_DIR="/tmp/universal-dmg-output"
+          VERIFY_MOUNT="/tmp/dmg-universal-verify"
           rm -rf "${CPACK_PROJECT_DIR}"
           rm -rf "${CPACK_OUTPUT_DIR}"
+          rm -rf "${VERIFY_MOUNT}"
           mkdir -p "${CPACK_PROJECT_DIR}"
           mkdir -p "${CPACK_OUTPUT_DIR}"
+          mkdir -p "${VERIFY_MOUNT}"
+
+          cleanup_package_verify() {
+            hdiutil detach "${VERIFY_MOUNT}" -quiet 2>/dev/null || true
+          }
+          trap cleanup_package_verify EXIT
 
           APP_ESCAPED="${UNIVERSAL_APP//\"/\\\"}"
           LICENSE_FILE="${GITHUB_WORKSPACE}/LICENSE"
@@ -426,6 +434,30 @@ jobs:
             find "${CPACK_OUTPUT_DIR}" -maxdepth 4 -print || true
             exit 1
           fi
+
+          echo "Verifying app signature inside packaged DMG"
+          hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${VERIFY_MOUNT}" "${DMG_FILE}"
+          DMG_APP_PATH=$(find "${VERIFY_MOUNT}" -maxdepth 1 -name '*.app' -type d -print -quit)
+          if [ -z "${DMG_APP_PATH}" ]; then
+            echo "::error::No .app found in packaged DMG"
+            ls -la "${VERIFY_MOUNT}" || true
+            exit 1
+          fi
+
+          if ! codesign --verify --deep --strict --verbose=2 "${DMG_APP_PATH}"; then
+            echo "::error::Codesign verification failed for app inside DMG"
+            echo "App path: ${DMG_APP_PATH}"
+            find "${DMG_APP_PATH}/Contents" -type f | while read f; do
+              if file "$f" | grep -qE 'Mach-O'; then
+                echo "=== $f ==="
+                lipo -info "$f" || true
+                codesign -dv --verbose=4 "$f" 2>&1 || true
+              fi
+            done
+            exit 1
+          fi
+
+          hdiutil detach "${VERIFY_MOUNT}" -quiet
 
           cp "${DMG_FILE}" output-universal/
 
