@@ -24,6 +24,7 @@ on:
       source_run_id:
         description: 'Optional: prior workflow run ID to reuse build artifacts and run universal job only'
         required: false
+        default: ''
         type: string
 
 env:
@@ -49,7 +50,8 @@ jobs:
       ) &&
       (
         github.event_name != 'workflow_dispatch' ||
-        github.event.inputs.source_run_id == ''
+        github.event.inputs.source_run_id == '' ||
+        github.event.inputs.source_run_id == null
       )
     steps:
       - name: Select XCode version
@@ -134,59 +136,73 @@ jobs:
     needs: build
     runs-on: macos-15
     if: |
+      always() &&
       (
         github.event_name != 'pull_request' ||
         !contains(github.event.pull_request.labels.*.name, 'ci: skip-cpn-macos')
       ) &&
       (
         needs.build.result == 'success' ||
-        (github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != '')
+        (
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.source_run_id != '' &&
+          github.event.inputs.source_run_id != null
+        )
       )
     steps:
       - name: Compose artifact ref
         shell: bash
         run: |
           artifact_ref=$(printf '%s' "${GITHUB_REF_NAME}" | sed 's#/#-#g')
+          source_run_id_raw='${{ github.event.inputs.source_run_id }}'
+          source_run_id="${source_run_id_raw##*/}"
+          source_run_id="${source_run_id%%\?*}"
+
+          if [ -n "${source_run_id_raw}" ] && ! [[ "${source_run_id}" =~ ^[0-9]+$ ]]; then
+            echo "::error::source_run_id must be a numeric run id or Actions run URL; got: ${source_run_id_raw}"
+            exit 1
+          fi
+
           echo "artifact_ref=${artifact_ref}" >> "$GITHUB_ENV"
-          echo "source_run_id=${{ github.event.inputs.source_run_id }}" >> "$GITHUB_ENV"
-          if [ -n "${{ github.event.inputs.source_run_id }}" ]; then
-            echo "Universal build mode: reuse artifacts from run_id=${{ github.event.inputs.source_run_id }}"
+          echo "source_run_id=${source_run_id}" >> "$GITHUB_ENV"
+          if [ -n "${source_run_id}" ]; then
+            echo "Universal build mode: reuse artifacts from run_id=${source_run_id}"
           else
             echo "Universal build mode: use artifacts from current workflow run"
           fi
 
       - name: Download x86_64 artifact (current run)
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == ''
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == '' || github.event.inputs.source_run_id == null
         uses: actions/download-artifact@v4
         with:
           name: "edgetx-cpn-osx-x86_64-${{ env.artifact_ref }}"
           path: output-x86_64
 
       - name: Download x86_64 artifact (from source run)
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != ''
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != '' && github.event.inputs.source_run_id != null
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.inputs.source_run_id }}
+          run-id: ${{ env.source_run_id }}
           pattern: "edgetx-cpn-osx-x86_64-*"
           merge-multiple: true
           path: output-x86_64
 
       - name: Download arm64 artifact (current run)
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == ''
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.source_run_id == '' || github.event.inputs.source_run_id == null
         uses: actions/download-artifact@v4
         with:
           name: "edgetx-cpn-osx-arm64-${{ env.artifact_ref }}"
           path: output-arm64
 
       - name: Download arm64 artifact (from source run)
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != ''
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.source_run_id != '' && github.event.inputs.source_run_id != null
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.inputs.source_run_id }}
+          run-id: ${{ env.source_run_id }}
           pattern: "edgetx-cpn-osx-arm64-*"
           merge-multiple: true
           path: output-arm64
