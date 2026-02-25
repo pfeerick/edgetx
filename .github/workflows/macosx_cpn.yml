@@ -256,8 +256,22 @@ jobs:
           echo "arm64 DMG: ${ARM_DMG}"
 
           # Mount both DMGs
-          hdiutil attach "${X86_DMG}" -mountpoint /tmp/dmg-x86_64 -nobrowse
-          hdiutil attach "${ARM_DMG}" -mountpoint /tmp/dmg-arm64 -nobrowse
+          attach_dmg() {
+            local dmg_path="$1"
+            local mount_point="$2"
+            local label="$3"
+
+            echo "Attaching ${label} DMG at ${mount_point}"
+            if ! hdiutil attach "${dmg_path}" -mountpoint "${mount_point}" -nobrowse -readonly -acceptlicense; then
+              echo "::error::Failed to attach ${label} DMG: ${dmg_path}"
+              echo "${label} DMG imageinfo:"
+              hdiutil imageinfo "${dmg_path}" || true
+              exit 1
+            fi
+          }
+
+          attach_dmg "${X86_DMG}" /tmp/dmg-x86_64 x86_64
+          attach_dmg "${ARM_DMG}" /tmp/dmg-arm64 arm64
 
           echo "Mounted x86_64 DMG:" && ls -la /tmp/dmg-x86_64
           echo "Mounted arm64 DMG:" && ls -la /tmp/dmg-arm64
