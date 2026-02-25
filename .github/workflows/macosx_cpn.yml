@@ -263,13 +263,13 @@ jobs:
             local hdiutil_rc=1
 
             echo "Attaching ${label} DMG at ${mount_point}"
-            if hdiutil attach -nobrowse -readonly -acceptlicense -mountpoint "${mount_point}" "${dmg_path}"; then
+            if hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"; then
               return 0
             fi
 
             echo "Initial attach failed for ${label}; retrying with piped license acceptance"
             set +o pipefail
-            yes | hdiutil attach -nobrowse -readonly -acceptlicense -mountpoint "${mount_point}" "${dmg_path}"
+            yes | hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"
             hdiutil_rc=${PIPESTATUS[1]:-1}
             set -o pipefail
 
