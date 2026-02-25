@@ -309,9 +309,11 @@ jobs:
 
           # Lipo all Mach-O files
           merged_count=0
+          reused_universal_count=0
           skipped_count=0
           missing_count=0
-          find "${APP_PATH_X86}" -type f -print0 | while IFS= read -r -d '' f_x86; do
+          macho_count=0
+          while IFS= read -r -d '' f_x86; do
             rel="${f_x86#${APP_PATH_X86}/}"
             f_arm="${APP_PATH_ARM}/${rel}"
             f_out="/tmp/app-universal/${APP_NAME}/${rel}"
@@ -333,21 +335,52 @@ jobs:
               continue
             fi
 
-            if ! lipo -create "${f_x86}" "${f_arm}" -output "${f_out}"; then
+            macho_count=$((macho_count + 1))
+
+            arch_x86=$(lipo -archs "${f_x86}" 2>/dev/null || true)
+            arch_arm=$(lipo -archs "${f_arm}" 2>/dev/null || true)
+
+            src_x86=""
+            src_arm=""
+            if echo " ${arch_x86} " | grep -q ' x86_64 '; then src_x86="${f_x86}"; fi
+            if echo " ${arch_x86} " | grep -q ' arm64 '; then src_arm="${f_x86}"; fi
+            if [ -z "${src_x86}" ] && echo " ${arch_arm} " | grep -q ' x86_64 '; then src_x86="${f_arm}"; fi
+            if [ -z "${src_arm}" ] && echo " ${arch_arm} " | grep -q ' arm64 '; then src_arm="${f_arm}"; fi
+
+            if [ "${src_x86}" = "${f_x86}" ] && [ "${src_arm}" = "${f_x86}" ]; then
+              reused_universal_count=$((reused_universal_count + 1))
+              continue
+            fi
+
+            if [ -z "${src_x86}" ] || [ -z "${src_arm}" ]; then
+              echo "Missing required architectures for: ${rel}"
+              echo "x86_64 arches: ${arch_x86}"
+              echo "arm64 arches:  ${arch_arm}"
+              missing_count=$((missing_count + 1))
+              continue
+            fi
+
+            if ! lipo -create -arch x86_64 "${src_x86}" -arch arm64 "${src_arm}" -output "${f_out}"; then
               echo "::error::lipo failed for ${rel}"
               echo "x86_64: $(file "${f_x86}")"
               echo "arm64:  $(file "${f_arm}")"
+              echo "x86_64 arches: ${arch_x86}"
+              echo "arm64 arches:  ${arch_arm}"
               lipo -info "${f_x86}" || true
               lipo -info "${f_arm}" || true
               exit 1
             fi
 
             merged_count=$((merged_count + 1))
-          done
+          done < <(find "${APP_PATH_X86}" -type f -print0)
 
-          echo "Lipo merge summary: merged=${merged_count}, skipped_non_macho=${skipped_count}, missing_counterparts=${missing_count}"
-          if [ "${merged_count}" -eq 0 ]; then
-            echo "::error::No Mach-O binaries were merged"
+          echo "Lipo merge summary: macho=${macho_count}, merged=${merged_count}, reused_universal=${reused_universal_count}, skipped_non_macho=${skipped_count}, missing_counterparts=${missing_count}"
+          if [ "${macho_count}" -eq 0 ]; then
+            echo "::error::No Mach-O binaries found to process"
+            exit 1
+          fi
+          if [ $((merged_count + reused_universal_count)) -eq 0 ]; then
+            echo "::error::No universal binaries were produced"
             exit 1
           fi
 
