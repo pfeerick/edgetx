@@ -413,11 +413,47 @@ jobs:
       - name: Package universal DMG
         shell: bash
         run: |
+          set -euo pipefail
+
           mkdir -p output-universal
-          hdiutil create -volname "${{ env.app_name }}" \
-            -srcfolder /tmp/app-universal \
-            -ov -format UDZO \
-            "output-universal/${{ env.universal_dmg_name }}"
+
+          TEMPLATE_DMG=$(find output-x86_64 -name 'edgetx-companion-*.dmg' -print -quit)
+          if [ -z "${TEMPLATE_DMG}" ]; then
+            echo "::error::Unable to locate x86_64 template DMG for packaging"
+            exit 1
+          fi
+
+          RW_DMG="/tmp/edgetx-universal-template-rw.dmg"
+          TEMPLATE_MOUNT="/tmp/dmg-template-universal"
+
+          cleanup_package() {
+            hdiutil detach "${TEMPLATE_MOUNT}" -quiet 2>/dev/null || true
+            rm -f "${RW_DMG}"
+          }
+          trap cleanup_package EXIT
+
+          rm -f "${RW_DMG}"
+          hdiutil convert "${TEMPLATE_DMG}" -format UDRW -o "${RW_DMG}"
+
+          mkdir -p "${TEMPLATE_MOUNT}"
+          hdiutil attach -nobrowse -readwrite -mountpoint "${TEMPLATE_MOUNT}" "${RW_DMG}"
+
+          TEMPLATE_APP_PATH=$(find "${TEMPLATE_MOUNT}" -maxdepth 1 -name '*.app' -type d -print -quit)
+          if [ -z "${TEMPLATE_APP_PATH}" ]; then
+            echo "::error::Template DMG does not contain an .app at root"
+            exit 1
+          fi
+
+          rm -rf "${TEMPLATE_APP_PATH}"
+          cp -R "/tmp/app-universal/${{ env.app_name }}" "${TEMPLATE_MOUNT}/"
+
+          if [ ! -e "${TEMPLATE_MOUNT}/Applications" ]; then
+            ln -s /Applications "${TEMPLATE_MOUNT}/Applications"
+          fi
+
+          hdiutil detach "${TEMPLATE_MOUNT}" -quiet
+
+          hdiutil convert "${RW_DMG}" -format UDZO -o "output-universal/${{ env.universal_dmg_name }}"
 
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4
