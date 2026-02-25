@@ -423,6 +423,12 @@ jobs:
             exit 1
           fi
 
+          UNIVERSAL_APP="/tmp/app-universal/${{ env.app_name }}"
+          if [ ! -d "${UNIVERSAL_APP}" ]; then
+            echo "::error::Universal app not found: ${UNIVERSAL_APP}"
+            exit 1
+          fi
+
           RW_DMG="/tmp/edgetx-universal-template-rw.dmg"
           TEMPLATE_MOUNT="/tmp/dmg-template-universal"
 
@@ -435,6 +441,21 @@ jobs:
           rm -f "${RW_DMG}"
           hdiutil convert "${TEMPLATE_DMG}" -format UDRW -o "${RW_DMG}"
 
+          universal_kb=$(du -sk "${UNIVERSAL_APP}" | awk '{print $1}')
+          required_mb=$(( (universal_kb / 1024) + 2048 ))
+          current_bytes=$(hdiutil imageinfo "${RW_DMG}" | awk -F': *' '/Total Bytes/{print $2}' | awk '{print $1}' | tr -d ',')
+          current_mb=0
+          if [[ "${current_bytes}" =~ ^[0-9]+$ ]]; then
+            current_mb=$(( (current_bytes + 1048575) / 1048576 ))
+          fi
+
+          if [ "${required_mb}" -gt "${current_mb}" ]; then
+            echo "Resizing RW DMG from ${current_mb}MB to ${required_mb}MB for universal app copy"
+            hdiutil resize -size "${required_mb}m" "${RW_DMG}"
+          else
+            echo "RW DMG size ${current_mb}MB is sufficient"
+          fi
+
           mkdir -p "${TEMPLATE_MOUNT}"
           hdiutil attach -nobrowse -readwrite -mountpoint "${TEMPLATE_MOUNT}" "${RW_DMG}"
 
@@ -445,7 +466,7 @@ jobs:
           fi
 
           rm -rf "${TEMPLATE_APP_PATH}"
-          cp -R "/tmp/app-universal/${{ env.app_name }}" "${TEMPLATE_MOUNT}/"
+          cp -R "${UNIVERSAL_APP}" "${TEMPLATE_MOUNT}/"
 
           if [ ! -e "${TEMPLATE_MOUNT}/Applications" ]; then
             ln -s /Applications "${TEMPLATE_MOUNT}/Applications"
