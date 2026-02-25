@@ -94,6 +94,7 @@ jobs:
         shell: bash
         env:
           CMAKE_BUILD_PARALLEL_LEVEL: 3
+          MACOS_APP_ONLY: 1
         run: |
           mkdir output && mkdir logs && \
           tools/build-companion.sh "$(pwd)" "$(pwd)/output/" 2>&1 | tee logs/build-main.log
@@ -150,6 +151,9 @@ jobs:
         )
       )
     steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
       - name: Compose artifact ref
         shell: bash
         run: |
@@ -221,86 +225,49 @@ jobs:
             find output-x86_64 -maxdepth 4 -print 2>/dev/null || true
             echo "--- output-arm64 files ---"
             find output-arm64 -maxdepth 4 -print 2>/dev/null || true
-            echo "--- /tmp/dmg-x86_64 contents ---"
-            ls -la /tmp/dmg-x86_64 2>/dev/null || true
-            echo "--- /tmp/dmg-arm64 contents ---"
-            ls -la /tmp/dmg-arm64 2>/dev/null || true
+            echo "--- /tmp/app-x86 contents ---"
+            find /tmp/app-x86 -maxdepth 4 -print 2>/dev/null || true
+            echo "--- /tmp/app-arm contents ---"
+            find /tmp/app-arm -maxdepth 4 -print 2>/dev/null || true
             echo "--- /tmp/app-universal contents ---"
             find /tmp/app-universal -maxdepth 4 -print 2>/dev/null || true
             return "${exit_code}"
           }
           trap on_error ERR
 
-          mkdir -p /tmp/app-universal /tmp/dmg-x86_64 /tmp/dmg-arm64 output-universal
-
-          cleanup() {
-            hdiutil detach /tmp/dmg-x86_64 -quiet 2>/dev/null || true
-            hdiutil detach /tmp/dmg-arm64 -quiet 2>/dev/null || true
-          }
-          trap cleanup EXIT
+          mkdir -p /tmp/app-universal /tmp/app-x86 /tmp/app-arm output-universal
 
           echo "Discovering input artifacts..."
           echo "output-x86_64 layout:" && find output-x86_64 -maxdepth 3 -print || true
           echo "output-arm64 layout:" && find output-arm64 -maxdepth 3 -print || true
 
-          X86_DMG=$(find output-x86_64 -name 'edgetx-companion-*.dmg' -print -quit)
-          ARM_DMG=$(find output-arm64 -name 'edgetx-companion-*.dmg' -print -quit)
+          X86_APP_ARCHIVE=$(find output-x86_64 -name '*.app.tar.gz' -print -quit)
+          ARM_APP_ARCHIVE=$(find output-arm64 -name '*.app.tar.gz' -print -quit)
 
-          if [ -z "${X86_DMG}" ] || [ -z "${ARM_DMG}" ]; then
-            echo "Could not find input DMGs in downloaded artifacts"
+          if [ -z "${X86_APP_ARCHIVE}" ] || [ -z "${ARM_APP_ARCHIVE}" ]; then
+            echo "Could not find input app archives in downloaded artifacts"
             find output-x86_64 output-arm64 -maxdepth 3 -type f || true
             exit 1
           fi
 
-          echo "x86_64 DMG: ${X86_DMG}"
-          echo "arm64 DMG: ${ARM_DMG}"
+          echo "x86_64 app archive: ${X86_APP_ARCHIVE}"
+          echo "arm64 app archive: ${ARM_APP_ARCHIVE}"
 
-          # Mount both DMGs
-          attach_dmg() {
-            local dmg_path="$1"
-            local mount_point="$2"
-            local label="$3"
-            local hdiutil_rc=1
+          tar -xzf "${X86_APP_ARCHIVE}" -C /tmp/app-x86
+          tar -xzf "${ARM_APP_ARCHIVE}" -C /tmp/app-arm
 
-            echo "Attaching ${label} DMG at ${mount_point}"
-            if hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"; then
-              return 0
-            fi
-
-            echo "Initial attach failed for ${label}; retrying with piped license acceptance"
-            set +o pipefail
-            yes | hdiutil attach -nobrowse -readonly -noautoopen -mountpoint "${mount_point}" "${dmg_path}"
-            hdiutil_rc=${PIPESTATUS[1]:-1}
-            set -o pipefail
-
-            if [ "${hdiutil_rc}" -eq 0 ]; then
-              return 0
-            fi
-
-            echo "::error::Failed to attach ${label} DMG: ${dmg_path}"
-            echo "${label} DMG imageinfo:"
-            hdiutil imageinfo "${dmg_path}" || true
-            exit 1
-          }
-
-          attach_dmg "${X86_DMG}" /tmp/dmg-x86_64 x86_64
-          attach_dmg "${ARM_DMG}" /tmp/dmg-arm64 arm64
-
-          echo "Mounted x86_64 DMG:" && ls -la /tmp/dmg-x86_64
-          echo "Mounted arm64 DMG:" && ls -la /tmp/dmg-arm64
-
-          # Get app name from mounted volume
-          APP_PATH_X86=$(find /tmp/dmg-x86_64 -maxdepth 1 -name '*.app' -type d -print -quit)
+          APP_PATH_X86=$(find /tmp/app-x86 -maxdepth 2 -name '*.app' -type d -print -quit)
           if [ -z "${APP_PATH_X86}" ]; then
-            echo "No .app found inside x86_64 DMG"
+            echo "No .app found inside x86_64 archive"
             exit 1
           fi
+
           APP_NAME=$(basename "${APP_PATH_X86}")
-          APP_PATH_ARM="/tmp/dmg-arm64/${APP_NAME}"
+          APP_PATH_ARM="/tmp/app-arm/${APP_NAME}"
           if [ ! -d "${APP_PATH_ARM}" ]; then
-            echo "Matching app not found in arm64 DMG: ${APP_PATH_ARM}"
-            echo "Available arm64 apps:"
-            find /tmp/dmg-arm64 -maxdepth 1 -name '*.app' -type d -print || true
+            echo "Matching app not found in arm64 archive: ${APP_PATH_ARM}"
+            echo "Available arm64 apps in /tmp/app-arm:"
+            find /tmp/app-arm -maxdepth 2 -name '*.app' -type d -print || true
             exit 1
           fi
 
@@ -385,8 +352,11 @@ jobs:
           fi
 
           # Persist names for later steps
-          DMG_NAME=$(basename "${X86_DMG}")
-          DMG_NAME="${DMG_NAME%.dmg}-universal.dmg"
+          VERSION_FAMILY=$(printf '%s' "${APP_NAME}" | sed -E 's/^EdgeTX Companion ([0-9]+\.[0-9]+(\.[0-9]+)?).*\.app$/\1/')
+          if [ -z "${VERSION_FAMILY}" ] || [ "${VERSION_FAMILY}" = "${APP_NAME}" ]; then
+            VERSION_FAMILY="unknown"
+          fi
+          DMG_NAME="edgetx-companion-${VERSION_FAMILY}-universal"
           echo "app_name=${APP_NAME}" >> "$GITHUB_ENV"
           echo "universal_dmg_name=${DMG_NAME}" >> "$GITHUB_ENV"
 
@@ -417,77 +387,35 @@ jobs:
 
           mkdir -p output-universal
 
-          TEMPLATE_DMG=$(find output-x86_64 -name 'edgetx-companion-*.dmg' -print -quit)
-          if [ -z "${TEMPLATE_DMG}" ]; then
-            echo "::error::Unable to locate x86_64 template DMG for packaging"
-            exit 1
-          fi
-
           UNIVERSAL_APP="/tmp/app-universal/${{ env.app_name }}"
           if [ ! -d "${UNIVERSAL_APP}" ]; then
             echo "::error::Universal app not found: ${UNIVERSAL_APP}"
             exit 1
           fi
 
-          RW_DMG="/tmp/edgetx-universal-template-rw.dmg"
-          TEMPLATE_MOUNT="/tmp/dmg-template-universal"
-          TEMPLATE_REZ_XML="/tmp/edgetx-template-rez.xml"
-          UNIVERSAL_REZ_XML="/tmp/edgetx-universal-rez.xml"
-          MERGED_REZ_XML="/tmp/edgetx-universal-rez-merged.xml"
-          UNIVERSAL_DMG="output-universal/${{ env.universal_dmg_name }}"
+          CPACK_PROJECT_DIR="/tmp/universal-dmg-cpack"
+          rm -rf "${CPACK_PROJECT_DIR}"
+          mkdir -p "${CPACK_PROJECT_DIR}"
 
-          cleanup_package() {
-            hdiutil detach "${TEMPLATE_MOUNT}" -quiet 2>/dev/null || true
-            rm -f "${RW_DMG}"
-            rm -f "${TEMPLATE_REZ_XML}" "${UNIVERSAL_REZ_XML}" "${MERGED_REZ_XML}"
-          }
-          trap cleanup_package EXIT
+          APP_ESCAPED="${UNIVERSAL_APP//\"/\\\"}"
+          LICENSE_FILE="${GITHUB_WORKSPACE}/LICENSE"
+          DS_STORE_FILE="${GITHUB_WORKSPACE}/companion/targets/mac/DS_Store"
 
-          rm -f "${RW_DMG}"
-          hdiutil convert "${TEMPLATE_DMG}" -format UDRW -o "${RW_DMG}"
+          cat > "${CPACK_PROJECT_DIR}/CMakeLists.txt" <<EOF
+          cmake_minimum_required(VERSION 3.21)
+          project(EdgeTXUniversalDMG)
+          set(CPACK_GENERATOR "DragNDrop")
+          set(CPACK_BINARY_DRAGNDROP ON)
+          set(CPACK_DMG_VOLUME_NAME "EdgeTX Companion")
+          set(CPACK_PACKAGE_FILE_NAME "${{ env.universal_dmg_name }}")
+          set(CPACK_RESOURCE_FILE_LICENSE "${LICENSE_FILE}")
+          set(CPACK_DMG_DS_STORE "${DS_STORE_FILE}")
+          install(DIRECTORY "${APP_ESCAPED}" DESTINATION "." COMPONENT Runtime)
+          include(CPack)
+          EOF
 
-          universal_kb=$(du -sk "${UNIVERSAL_APP}" | awk '{print $1}')
-          required_mb=$(( (universal_kb / 1024) + 2048 ))
-          current_bytes=$(hdiutil imageinfo "${RW_DMG}" | awk -F': *' '/Total Bytes/{print $2}' | awk '{print $1}' | tr -d ',')
-          current_mb=0
-          if [[ "${current_bytes}" =~ ^[0-9]+$ ]]; then
-            current_mb=$(( (current_bytes + 1048575) / 1048576 ))
-          fi
-
-          if [ "${required_mb}" -gt "${current_mb}" ]; then
-            echo "Resizing RW DMG from ${current_mb}MB to ${required_mb}MB for universal app copy"
-            hdiutil resize -size "${required_mb}m" "${RW_DMG}"
-          else
-            echo "RW DMG size ${current_mb}MB is sufficient"
-          fi
-
-          mkdir -p "${TEMPLATE_MOUNT}"
-          hdiutil attach -nobrowse -readwrite -mountpoint "${TEMPLATE_MOUNT}" "${RW_DMG}"
-
-          TEMPLATE_APP_PATH=$(find "${TEMPLATE_MOUNT}" -maxdepth 1 -name '*.app' -type d -print -quit)
-          if [ -z "${TEMPLATE_APP_PATH}" ]; then
-            echo "::error::Template DMG does not contain an .app at root"
-            exit 1
-          fi
-
-          rm -rf "${TEMPLATE_APP_PATH}"
-          cp -R "${UNIVERSAL_APP}" "${TEMPLATE_MOUNT}/"
-
-          if [ ! -e "${TEMPLATE_MOUNT}/Applications" ]; then
-            ln -s /Applications "${TEMPLATE_MOUNT}/Applications"
-          fi
-
-          hdiutil detach "${TEMPLATE_MOUNT}" -quiet
-
-          hdiutil convert "${RW_DMG}" -format UDZO -o "${UNIVERSAL_DMG}"
-
-          # Preserve template DMG resources (including SLA) while keeping universal blkx map intact
-          hdiutil udifderez -xml "${TEMPLATE_DMG}" > "${TEMPLATE_REZ_XML}"
-          hdiutil udifderez -xml "${UNIVERSAL_DMG}" > "${UNIVERSAL_REZ_XML}"
-
-          python3 -c 'import plistlib; t=plistlib.load(open("/tmp/edgetx-template-rez.xml","rb")); u=plistlib.load(open("/tmp/edgetx-universal-rez.xml","rb")); tr=t.get("resource-fork",{}); ur=u.get("resource-fork",{}); [ur.__setitem__(k,v) for k,v in tr.items() if k!="blkx"]; u["resource-fork"]=ur; plistlib.dump(u, open("/tmp/edgetx-universal-rez-merged.xml","wb"))'
-
-          hdiutil udifrez "${UNIVERSAL_DMG}" -xml "${MERGED_REZ_XML}" -replaceall
+          cmake -S "${CPACK_PROJECT_DIR}" -B "${CPACK_PROJECT_DIR}/build"
+          cpack --config "${CPACK_PROJECT_DIR}/build/CPackConfig.cmake" -B output-universal
 
       - name: Archive universal artifact
         uses: actions/upload-artifact@v4

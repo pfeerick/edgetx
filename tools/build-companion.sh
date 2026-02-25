@@ -1,10 +1,11 @@
 #!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-. "$SCRIPT_DIR/build-common.sh" 
+. "$SCRIPT_DIR/build-common.sh"
 
 SRCDIR=$1
 OUTDIR=$2
+MACOS_APP_ONLY=${MACOS_APP_ONLY:-0}
 
 if [[ -z ${SRCDIR} ]]; then
   SRCDIR="$(pwd)"
@@ -64,7 +65,7 @@ output_error_log() {
         echo "------------------------------------------"
         cat "$log_file"
         echo "------------------------------------------"
-        
+
         # Also append to master log for aggregation
         {
             echo "=== Error from $log_file ($context) ==="
@@ -125,6 +126,16 @@ run_pipeline() {
             fi
             if ! execute_with_output "📦 Packaging" "cmake_build_parallel native --target ${PACKAGE_TARGET}" "$log_file" "true"; then
                 output_error_log "$log_file" "Final Packaging"
+                return 1
+            fi
+            ;;
+        "final-app")
+            if ! execute_with_output "🔧 Final config" "cmake_build_parallel . --target native-configure ${cmake_opts}" "$log_file" "$show_details"; then
+                output_error_log "$log_file" "Final Configuration"
+                return 1
+            fi
+            if ! execute_with_output "📦 Building companion" "cmake_build_parallel native --target companion ${cmake_opts}" "$log_file" "$show_details"; then
+                output_error_log "$log_file" "$context (Companion Build)"
                 return 1
             fi
             ;;
@@ -236,7 +247,7 @@ for i in "${!simulator_plugins[@]}"; do
     plugin="${simulator_plugins[$i]}"
     current=$((i + 1))
     percent=$((current * 100 / TOTAL))
-    
+
     # For terminal output, put each plugin on its own line for cleaner display
     if [[ -n "$GITHUB_ACTIONS" ]]; then
         printf "::group::%s %-12s [%2d/%2d] %3d%%\n" "$PACKAGE_EMOJI" "$plugin" "$current" "$TOTAL" "$percent"
@@ -290,24 +301,56 @@ else
 fi
 
 error_status=0
-if run_pipeline "final" "final.log" "companion" "true"; then
-    if cp native/$PACKAGE_FILES "${OUTDIR}" 2>/dev/null; then
-        echo "    ✅ All builds completed successfully!"
-        echo "    📁 Package saved to: ${OUTDIR}"
+if [[ "$(uname)" == "Darwin" && "${MACOS_APP_ONLY}" == "1" ]]; then
+    APP_STAGE_DIR="${PWD}/app-stage"
+    if run_pipeline "final-app" "final.log" "companion" "true"; then
+        rm -rf "${APP_STAGE_DIR}"
+        if cmake --install native --prefix "${APP_STAGE_DIR}" --component Runtime >> final.log 2>&1; then
+            APP_BUNDLE_PATH=$(find "${APP_STAGE_DIR}" -maxdepth 1 -name "*.app" -type d -print -quit)
+            if [[ -n "${APP_BUNDLE_PATH}" ]]; then
+                APP_BUNDLE_NAME=$(basename "${APP_BUNDLE_PATH}")
+                APP_ARCHIVE_NAME="${APP_BUNDLE_NAME}.tar.gz"
+                if tar -C "${APP_STAGE_DIR}" -czf "${OUTDIR}/${APP_ARCHIVE_NAME}" "${APP_BUNDLE_NAME}"; then
+                    echo "    ✅ All builds completed successfully!"
+                    echo "    📁 App archive saved to: ${OUTDIR}/${APP_ARCHIVE_NAME}"
+                else
+                    echo "    ❌ Failed to create app archive"
+                    error_status=1
+                fi
+            else
+                echo "    ❌ No .app bundle found in install staging directory"
+                find "${APP_STAGE_DIR}" -maxdepth 3 -print 2>/dev/null || true
+                error_status=1
+            fi
+        else
+            echo "    ❌ Runtime install failed while preparing app bundle"
+            output_error_log "final.log" "Runtime Install"
+            error_status=1
+        fi
     else
-        echo "    ❌ Failed to copy package files to output directory"
-        echo "    📁 Directory Contents:"
-        echo "    ----------------------"
-
-        echo "Contents of native/ directory:"
-        ls -la native/ || echo "native/ directory not found"
-        echo "Looking for files matching: $PACKAGE_FILES"
-        find native/ -name "$PACKAGE_FILES" 2>/dev/null || echo "No matching files found"
+        echo "    ❌ Final app bundle build failed"
         error_status=1
     fi
 else
-    echo "    ❌ Final packaging failed"
-    error_status=1
+    if run_pipeline "final" "final.log" "companion" "true"; then
+        if cp native/$PACKAGE_FILES "${OUTDIR}" 2>/dev/null; then
+            echo "    ✅ All builds completed successfully!"
+            echo "    📁 Package saved to: ${OUTDIR}"
+        else
+            echo "    ❌ Failed to copy package files to output directory"
+            echo "    📁 Directory Contents:"
+            echo "    ----------------------"
+
+            echo "Contents of native/ directory:"
+            ls -la native/ || echo "native/ directory not found"
+            echo "Looking for files matching: $PACKAGE_FILES"
+            find native/ -name "$PACKAGE_FILES" 2>/dev/null || echo "No matching files found"
+            error_status=1
+        fi
+    else
+        echo "    ❌ Final packaging failed"
+        error_status=1
+    fi
 fi
 
 if [[ -n "$GITHUB_ACTIONS" ]]; then
