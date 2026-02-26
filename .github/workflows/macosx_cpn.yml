@@ -437,7 +437,7 @@ jobs:
           set(CPACK_PACKAGE_FILE_NAME "${{ env.universal_dmg_name }}")
           set(CPACK_RESOURCE_FILE_LICENSE "${LICENSE_FILE}")
           set(CPACK_DMG_DS_STORE "${DS_STORE_FILE}")
-          install(DIRECTORY "${APP_ESCAPED}" DESTINATION "." COMPONENT Runtime)
+          install(DIRECTORY "${APP_ESCAPED}" DESTINATION "." COMPONENT Runtime USE_SOURCE_PERMISSIONS)
           include(CPack)
           EOF
 
