@@ -364,11 +364,18 @@ jobs:
           fi
 
           # Persist names for later steps
-          VERSION_FAMILY=$(printf '%s' "${APP_NAME}" | sed -E 's/^EdgeTX Companion ([0-9]+\.[0-9]+(\.[0-9]+)?).*\.app$/\1/')
-          if [ -z "${VERSION_FAMILY}" ] || [ "${VERSION_FAMILY}" = "${APP_NAME}" ]; then
-            VERSION_FAMILY="unknown"
+          APP_UNIVERSAL_INFO_PLIST="${APP_UNIVERSAL_PATH}/Contents/Info.plist"
+          VERSION_FULL=""
+          if [ -f "${APP_UNIVERSAL_INFO_PLIST}" ]; then
+            VERSION_FULL=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "${APP_UNIVERSAL_INFO_PLIST}" 2>/dev/null || true)
           fi
-          DMG_NAME="edgetx-companion-${VERSION_FAMILY}-universal"
+          if [ -z "${VERSION_FULL}" ]; then
+            VERSION_FULL=$(printf '%s' "${APP_NAME}" | sed -E 's/^EdgeTX Companion ([0-9]+\.[0-9]+(\.[0-9]+)?).*\.app$/\1/')
+          fi
+          if [ -z "${VERSION_FULL}" ] || [ "${VERSION_FULL}" = "${APP_NAME}" ]; then
+            VERSION_FULL="unknown"
+          fi
+          DMG_NAME="edgetx-companion-${VERSION_FULL}-universal"
           echo "app_name=${APP_NAME}" >> "$GITHUB_ENV"
           echo "universal_dmg_name=${DMG_NAME}" >> "$GITHUB_ENV"
 
