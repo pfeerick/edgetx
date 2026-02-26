@@ -1,23 +1,22 @@
 name: MacOSX Companion
 
 on:
-  # auto triggers disabled while universal job is being debugged.
-  # push:
-  #   branches:
-  #     - 'main'
-  #     - '[0-9]+.[0-9]+'
-  #   tags:
-  #     - v*
-  #   paths: &trigger-paths
-  #     - '.github/workflows/macosx_cpn.yml'
-  #     - 'companion/**'
-  #     - 'tools/build-companion.sh'
+  push:
+    branches:
+      - 'main'
+      - '[0-9]+.[0-9]+'
+    tags:
+      - v*
+    paths: &trigger-paths
+      - '.github/workflows/macosx_cpn.yml'
+      - 'companion/**'
+      - 'tools/build-companion.sh'
 
-  # pull_request:
-  #   branches:
-  #     - 'main'
-  #     - '[0-9]+.[0-9]+'
-  #   paths: *trigger-paths
+  pull_request:
+    branches:
+      - 'main'
+      - '[0-9]+.[0-9]+'
+    paths: *trigger-paths
 
   workflow_dispatch:
     inputs:
@@ -221,25 +220,15 @@ jobs:
             local line_no=${BASH_LINENO[0]:-unknown}
             local cmd=${BASH_COMMAND:-unknown}
             echo "::error::Create universal binaries failed at line ${line_no}: ${cmd} (exit ${exit_code})"
-            echo "--- output-x86_64 files ---"
-            find output-x86_64 -maxdepth 4 -print 2>/dev/null || true
-            echo "--- output-arm64 files ---"
-            find output-arm64 -maxdepth 4 -print 2>/dev/null || true
-            echo "--- /tmp/app-x86 contents ---"
-            find /tmp/app-x86 -maxdepth 4 -print 2>/dev/null || true
-            echo "--- /tmp/app-arm contents ---"
-            find /tmp/app-arm -maxdepth 4 -print 2>/dev/null || true
-            echo "--- /tmp/app-universal contents ---"
-            find /tmp/app-universal -maxdepth 4 -print 2>/dev/null || true
+            echo "x86 archive path: ${X86_APP_ARCHIVE:-<unset>}"
+            echo "arm archive path: ${ARM_APP_ARCHIVE:-<unset>}"
+            echo "app name: ${APP_NAME:-<unset>}"
+            ls -la /tmp/app-universal 2>/dev/null || true
             return "${exit_code}"
           }
           trap on_error ERR
 
           mkdir -p /tmp/app-universal /tmp/app-x86 /tmp/app-arm output-universal
-
-          echo "Discovering input artifacts..."
-          echo "output-x86_64 layout:" && find output-x86_64 -maxdepth 3 -print || true
-          echo "output-arm64 layout:" && find output-arm64 -maxdepth 3 -print || true
 
           X86_APP_ARCHIVE=$(find output-x86_64 -name '*.app.tar.gz' -print -quit)
           ARM_APP_ARCHIVE=$(find output-arm64 -name '*.app.tar.gz' -print -quit)
@@ -366,6 +355,13 @@ jobs:
               chmod 755 "$f"
             fi
           done
+
+          MAIN_EXECUTABLE="${APP_UNIVERSAL_PATH}/Contents/MacOS/companion"
+          if [ ! -x "${MAIN_EXECUTABLE}" ]; then
+            echo "::error::Main executable is not marked executable: ${MAIN_EXECUTABLE}"
+            ls -l "${APP_UNIVERSAL_PATH}/Contents/MacOS" || true
+            exit 1
+          fi
 
           # Persist names for later steps
           VERSION_FAMILY=$(printf '%s' "${APP_NAME}" | sed -E 's/^EdgeTX Companion ([0-9]+\.[0-9]+(\.[0-9]+)?).*\.app$/\1/')
