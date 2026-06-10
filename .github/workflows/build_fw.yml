@@ -20,12 +20,16 @@ on:
 jobs:
   test:
     name: Run tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     if: |
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-fw')
     strategy:
+      fail-fast: false
       matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
         target:
           - x9dp2019;x9e
           - tx15
@@ -48,7 +52,7 @@ jobs:
           - t15pro
           - pa01
     container:
-      image: ghcr.io/edgetx/edgetx-dev:latest
+      image: ghcr.io/edgetx/edgetx-dev:pr-42
       volumes:
         - ${{ github.workspace }}:/src
     steps:
@@ -68,12 +72,16 @@ jobs:
   build:
     name: Run builds
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     if: |
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-fw')
     strategy:
+      fail-fast: false
       matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
         target:
           - nv14;el18
           - pl18;pl18ev
@@ -92,7 +100,7 @@ jobs:
           - nb4p;st16
           - tx16smk3;t14;t15pro
     container:
-      image: ghcr.io/edgetx/edgetx-dev:latest
+      image: ghcr.io/edgetx/edgetx-dev:pr-42
       volumes:
         - ${{ github.workspace }}:/src
     steps:
@@ -112,7 +120,7 @@ jobs:
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v7
         with:
-          name: firmware-${{ matrix.target }}
+          name: firmware-${{ matrix.target }}-${{ matrix.os }}
           path: |
             fw.json
             LICENSE

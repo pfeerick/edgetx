@@ -92,12 +92,18 @@ jobs:
 
   build-linux:
     name: Linux Companion
-    runs-on: ubuntu-latest
     needs: modules
     if: inputs.target == 'all' || inputs.target == 'linux' || inputs.target == ''
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+    runs-on: ${{ matrix.os }}
 
     container:
-      image: ghcr.io/edgetx/edgetx-dev:latest
+      image: ghcr.io/edgetx/edgetx-dev:pr-42
       volumes:
         - ${{ github.workspace }}:/src
 
@@ -117,7 +123,7 @@ jobs:
       - name: Setup and Build
         uses: ./.github/actions/build_companion
         with:
-          os: 'linux'
+          os: ${{ matrix.os == 'ubuntu-24.04-arm' && 'linux-arm64' || 'linux-amd64' }}
 
   build-macos:
     name: macOS Companion
