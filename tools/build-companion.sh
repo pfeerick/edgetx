@@ -122,6 +122,8 @@ elif cp native/$PACKAGE_FILES "${OUTDIR}" 2>/dev/null; then
 else
     echo "    ❌ Failed to copy package files to output directory"
     ls -la native/ || echo "native/ directory not found"
+    echo "    DIAG: tail of packaging log:"
+    grep -A2 "DIAG:" "$LOG_FILE" || tail -100 "$LOG_FILE"
     error_status=1
 fi
 
