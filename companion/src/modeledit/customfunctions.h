@@ -112,6 +112,7 @@ class CustomFunctionsPanel : public GenericPanel
     QComboBox * fswtchGVmode[CPN_MAX_SPECIAL_FUNCTIONS];
     QMediaPlayer * mediaPlayer;
     bool warmingUpAudioOutput = false;
+    int playRequestId = 0;
 
     int selectedIndex;
     int fswCapability;

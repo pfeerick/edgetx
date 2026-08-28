@@ -318,7 +318,17 @@ bool CustomFunctionsPanel::playSound(int index)
     mediaPlayer->setSource(QUrl::fromLocalFile(path));
 
   mediaPlayerCurrent = index;
-  mediaPlayer->play();
+
+  // EXPERIMENT: on macOS the platform audio route appears to go cold within
+  // a couple of seconds of being idle, clipping ~0.5s off the start of the
+  // next playback no matter how the QMediaPlayer/QAudioOutput objects are
+  // managed. Test whether simply giving it a fixed, generous head start
+  // before every play() (not just the first) is enough on its own.
+  const int requestId = ++playRequestId;
+  QTimer::singleShot(700, mediaPlayer, [this, requestId]() {
+    if (requestId == playRequestId && mediaPlayerCurrent != -1)
+      mediaPlayer->play();
+  });
   return true;
 }
 
@@ -328,6 +338,7 @@ void CustomFunctionsPanel::stopSound(int index)
     playBT[index]->setChecked(false);
 
   mediaPlayerCurrent = -1;
+  ++playRequestId;
   mediaPlayer->stop();
 }
 
