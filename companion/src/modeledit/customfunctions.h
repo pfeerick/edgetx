@@ -70,6 +70,7 @@ class CustomFunctionsPanel : public GenericPanel
     void onItemModelUpdateComplete();
 
   private:
+    void warmUpAudioOutput();
     void populateFuncParamCB(QComboBox *b, uint function, unsigned int value, unsigned int adjustmode=0);
     bool hasClipboardData(QByteArray * data = nullptr) const;
     bool insertAllowed() const;
@@ -110,6 +111,7 @@ class CustomFunctionsPanel : public GenericPanel
     QComboBox * fswtchRepeat[CPN_MAX_SPECIAL_FUNCTIONS];
     QComboBox * fswtchGVmode[CPN_MAX_SPECIAL_FUNCTIONS];
     QMediaPlayer * mediaPlayer;
+    bool warmingUpAudioOutput = false;
 
     int selectedIndex;
     int fswCapability;

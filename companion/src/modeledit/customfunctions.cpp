@@ -24,6 +24,7 @@
 #include "appdata.h"
 
 #include <TimerEdit>
+#include <QTimer>
 
 CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, GeneralSettings & generalSettings, Firmware * firmware,
                                            CompoundItemModelFactory * sharedItemModels):
@@ -38,6 +39,7 @@ CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, 
   mediaPlayer->setAudioOutput(new QAudioOutput(mediaPlayer));
   connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, &CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged);
   connect(mediaPlayer, &QMediaPlayer::errorOccurred, this, &CustomFunctionsPanel::onMediaPlayerErrorOccurred);
+  warmUpAudioOutput();
 
   fswCapability = model ? firmware->getCapability(CustomFunctions) : firmware->getCapability(GlobalFunctions);
 
@@ -245,14 +247,43 @@ CustomFunctionsPanel::~CustomFunctionsPanel()
 
 void CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged(QMediaPlayer::PlaybackState state)
 {
+  if (warmingUpAudioOutput)
+    return;
+
   if (state != QMediaPlayer::PlayingState)
     stopSound(mediaPlayerCurrent);
 }
 
 void CustomFunctionsPanel::onMediaPlayerErrorOccurred(QMediaPlayer::Error error, const QString &errorString)
 {
+  if (warmingUpAudioOutput) {
+    warmingUpAudioOutput = false;
+    return;
+  }
+
   stopSound(mediaPlayerCurrent);
   QMessageBox::critical(this, CPN_STR_TTL_ERROR, tr("Error occurred while trying to play sound, possibly the file is already opened. (Err: %1 [%2])").arg(errorString).arg(error));
+}
+
+void CustomFunctionsPanel::warmUpAudioOutput()
+{
+  // Opening the platform audio route (eg. CoreAudio on macOS) after it has
+  // been idle takes a noticeable amount of time, long enough to clip the
+  // start of the first real preview played. Do a silent, throwaway play of
+  // a bundled sound as soon as the panel is created, so that cost is paid
+  // during panel setup instead of when the user presses play.
+  warmingUpAudioOutput = true;
+  QAudioOutput * output = mediaPlayer->audioOutput();
+  output->setVolume(0);
+  mediaPlayer->setSource(QUrl("qrc:/sounds/0.wav"));
+  mediaPlayer->play();
+
+  QTimer::singleShot(100, mediaPlayer, [this, output]() {
+    mediaPlayer->stop();
+    mediaPlayer->setSource(QUrl());
+    output->setVolume(1);
+    warmingUpAudioOutput = false;
+  });
 }
 
 bool CustomFunctionsPanel::playSound(int index)
