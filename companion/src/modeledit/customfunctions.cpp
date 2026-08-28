@@ -24,6 +24,7 @@
 #include "appdata.h"
 
 #include <TimerEdit>
+#include <QTimer>
 
 CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, GeneralSettings & generalSettings, Firmware * firmware,
                                            CompoundItemModelFactory * sharedItemModels):
@@ -288,8 +289,23 @@ bool CustomFunctionsPanel::playSound(int index)
   connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, &CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged);
   connect(mediaPlayer, &QMediaPlayer::errorOccurred, this, &CustomFunctionsPanel::onMediaPlayerErrorOccurred);
   mediaPlayerCurrent = index;
-  mediaPlayer->play();
+  playWhenAvailable(mediaPlayer);
   return true;
+}
+
+void CustomFunctionsPanel::playWhenAvailable(QMediaPlayer * player, int attemptsLeft)
+{
+  if (player->isAvailable() || attemptsLeft <= 0) {
+    player->play();
+    return;
+  }
+
+  // On some platforms (eg. macOS/AVFoundation) a freshly created QAudioOutput
+  // is not immediately ready, so calling play() straight away can clip the
+  // start of the sound. Poll isAvailable() briefly before starting playback.
+  QTimer::singleShot(20, player, [=]() {
+    playWhenAvailable(player, attemptsLeft - 1);
+  });
 }
 
 void CustomFunctionsPanel::stopSound(int index)
