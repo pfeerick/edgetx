@@ -30,10 +30,15 @@ CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, 
   GenericPanel(parent, model, generalSettings, firmware),
   functions(model ? model->customFn : generalSettings.customFn),
   mediaPlayerCurrent(-1),
-  mediaPlayer(nullptr),
+  mediaPlayer(new QMediaPlayer(this)),
   modelsUpdateCnt(0)
 {
   lock = true;
+
+  mediaPlayer->setAudioOutput(new QAudioOutput(mediaPlayer));
+  connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, &CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged);
+  connect(mediaPlayer, &QMediaPlayer::errorOccurred, this, &CustomFunctionsPanel::onMediaPlayerErrorOccurred);
+
   fswCapability = model ? firmware->getCapability(CustomFunctions) : firmware->getCapability(GlobalFunctions);
 
   tabModelFactory = new CompoundItemModelFactory(&generalSettings, model);
@@ -233,8 +238,7 @@ CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, 
 
 CustomFunctionsPanel::~CustomFunctionsPanel()
 {
-  if (mediaPlayer)
-    stopSound(mediaPlayerCurrent);
+  stopSound(mediaPlayerCurrent);
   delete tabModelFactory;
   delete tabFilterFactory;
 }
@@ -274,42 +278,17 @@ bool CustomFunctionsPanel::playSound(int index)
     return false;
   }
 
-  if (mediaPlayer)
+  if (mediaPlayerCurrent != -1)
     stopSound(mediaPlayerCurrent);
-
-  mediaPlayer = new QMediaPlayer(this);
-  mediaPlayer->setAudioOutput(new QAudioOutput(mediaPlayer));
 
   if (functions[index].func == FuncPlaySound)
     mediaPlayer->setSource(QUrl(path.prepend("qrc")));
   else
     mediaPlayer->setSource(QUrl::fromLocalFile(path));
 
-  connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, &CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged);
-  connect(mediaPlayer, &QMediaPlayer::errorOccurred, this, &CustomFunctionsPanel::onMediaPlayerErrorOccurred);
   mediaPlayerCurrent = index;
-  playWhenLoaded(mediaPlayer);
+  mediaPlayer->play();
   return true;
-}
-
-void CustomFunctionsPanel::playWhenLoaded(QMediaPlayer * player)
-{
-  // A freshly created QAudioOutput (see #7516) is not necessarily attached
-  // to the platform audio session yet when play() is called, which can clip
-  // the start of the sound on some backends (eg. macOS/AVFoundation). Wait
-  // for the media (and its pipeline) to finish loading before starting
-  // playback, rather than calling play() straight after setSource().
-  if (player->mediaStatus() == QMediaPlayer::LoadedMedia ||
-      player->mediaStatus() == QMediaPlayer::BufferedMedia) {
-    player->play();
-    return;
-  }
-
-  connect(player, &QMediaPlayer::mediaStatusChanged, player,
-          [player](QMediaPlayer::MediaStatus status) {
-            if (status == QMediaPlayer::LoadedMedia)
-              player->play();
-          }, Qt::SingleShotConnection);
 }
 
 void CustomFunctionsPanel::stopSound(int index)
@@ -318,13 +297,7 @@ void CustomFunctionsPanel::stopSound(int index)
     playBT[index]->setChecked(false);
 
   mediaPlayerCurrent = -1;
-
-  if (mediaPlayer) {
-    disconnect(mediaPlayer, 0, this, 0);
-    mediaPlayer->stop();
-    mediaPlayer->deleteLater();
-    mediaPlayer = nullptr;
-  }
+  mediaPlayer->stop();
 }
 
 void CustomFunctionsPanel::toggleSound(bool play)
