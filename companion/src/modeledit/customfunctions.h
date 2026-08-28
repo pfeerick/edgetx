@@ -70,7 +70,7 @@ class CustomFunctionsPanel : public GenericPanel
     void onItemModelUpdateComplete();
 
   private:
-    void playWhenAvailable(QMediaPlayer * player, int attemptsLeft = 10);
+    void playWhenLoaded(QMediaPlayer * player);
     void populateFuncParamCB(QComboBox *b, uint function, unsigned int value, unsigned int adjustmode=0);
     bool hasClipboardData(QByteArray * data = nullptr) const;
     bool insertAllowed() const;

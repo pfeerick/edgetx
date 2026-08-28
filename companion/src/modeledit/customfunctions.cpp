@@ -24,7 +24,6 @@
 #include "appdata.h"
 
 #include <TimerEdit>
-#include <QTimer>
 
 CustomFunctionsPanel::CustomFunctionsPanel(QWidget * parent, ModelData * model, GeneralSettings & generalSettings, Firmware * firmware,
                                            CompoundItemModelFactory * sharedItemModels):
@@ -289,23 +288,28 @@ bool CustomFunctionsPanel::playSound(int index)
   connect(mediaPlayer, &QMediaPlayer::playbackStateChanged, this, &CustomFunctionsPanel::onMediaPlayerPlaybackStateChanged);
   connect(mediaPlayer, &QMediaPlayer::errorOccurred, this, &CustomFunctionsPanel::onMediaPlayerErrorOccurred);
   mediaPlayerCurrent = index;
-  playWhenAvailable(mediaPlayer);
+  playWhenLoaded(mediaPlayer);
   return true;
 }
 
-void CustomFunctionsPanel::playWhenAvailable(QMediaPlayer * player, int attemptsLeft)
+void CustomFunctionsPanel::playWhenLoaded(QMediaPlayer * player)
 {
-  if (player->isAvailable() || attemptsLeft <= 0) {
+  // A freshly created QAudioOutput (see #7516) is not necessarily attached
+  // to the platform audio session yet when play() is called, which can clip
+  // the start of the sound on some backends (eg. macOS/AVFoundation). Wait
+  // for the media (and its pipeline) to finish loading before starting
+  // playback, rather than calling play() straight after setSource().
+  if (player->mediaStatus() == QMediaPlayer::LoadedMedia ||
+      player->mediaStatus() == QMediaPlayer::BufferedMedia) {
     player->play();
     return;
   }
 
-  // On some platforms (eg. macOS/AVFoundation) a freshly created QAudioOutput
-  // is not immediately ready, so calling play() straight away can clip the
-  // start of the sound. Poll isAvailable() briefly before starting playback.
-  QTimer::singleShot(20, player, [=]() {
-    playWhenAvailable(player, attemptsLeft - 1);
-  });
+  connect(player, &QMediaPlayer::mediaStatusChanged, player,
+          [player](QMediaPlayer::MediaStatus status) {
+            if (status == QMediaPlayer::LoadedMedia)
+              player->play();
+          }, Qt::SingleShotConnection);
 }
 
 void CustomFunctionsPanel::stopSound(int index)
