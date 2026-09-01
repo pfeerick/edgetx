@@ -344,7 +344,7 @@ void bootloaderDrawScreen(BootloaderState st, int opt, const char* str)
     lcd->drawText(USB_TXT_X, y + USB_PLG_TXT_YO, TR_BL_USB_CONNECTED, USB_TXT_ALIGN | BL_FOREGROUND);
   }
   else if (st == ST_FILE_LIST || st == ST_DIR_CHECK || st == ST_FLASH_CHECK ||
-           st == ST_FLASHING || st == ST_FLASH_DONE) {
+           st == ST_FLASHING || st == ST_FLASH_DONE || st == ST_FLASH_ERROR) {
 
     bootloaderDrawTitle(LV_SYMBOL_SD_CARD " /FIRMWARE");
 
@@ -358,6 +358,8 @@ void bootloaderDrawScreen(BootloaderState st, int opt, const char* str)
 
       lcd->drawRect(PROGRESS_X, (LCD_H - PROGRESS_H) / 2, PROGRESS_W, PROGRESS_H, LINE_H, SOLID, BL_SELECTED);
       lcd->drawSolidFilledRect(PROGRESS_X + PAD_SMALL, (LCD_H - PROGRESS_H) / 2 + PAD_SMALL, ((PROGRESS_W - PAD_SMALL * 2) * opt) / 100, PROGRESS_H - PAD_SMALL * 2, color);
+    } else if (st == ST_FLASH_ERROR) {
+      lcd->drawText(LCD_W / 2, LCD_H / 2, LV_SYMBOL_CLOSE " " TR_BL_WRITING_FAILED, CENTERED | BL_FOREGROUND);
     } else if (st == ST_DIR_CHECK) {
       if (opt == FR_NO_PATH) {
         lcd->drawText(LCD_W / 2, LCD_H / 2, LV_SYMBOL_CLOSE " " TR_BL_DIR_MISSING, CENTERED | BL_FOREGROUND);

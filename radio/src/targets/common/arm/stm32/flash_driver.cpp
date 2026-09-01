@@ -189,6 +189,9 @@ static int stm32_flash_erase_sector(uint32_t address)
 
   stm32_flash_unlock();
 
+  // wait for any pending operation and clear stale error flags
+  flash_drv_wait_last_op();
+
   if (sector > 11) sector += 4;
 
   CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
@@ -264,6 +267,9 @@ static int stm32_flash_program(uint32_t address, void* data, uint32_t len)
   __DSB();
   stm32_flash_unlock();
 
+  // wait for any pending operation and clear stale error flags
+  flash_drv_wait_last_op();
+
   while (address < end_addr) {
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_WORD;
@@ -284,6 +290,9 @@ static int stm32_flash_program(uint32_t address, void* data, uint32_t len)
 
   __DSB();
   __enable_irq();
+
+  flash_drv_flush_caches();
+
   stm32_flash_lock();
 
 #else
@@ -333,17 +342,27 @@ const etx_flash_driver_t stm32_flash_driver = {
 void unlockFlash() { stm32_flash_unlock(); }
 void lockFlash() { stm32_flash_lock(); }
 
-void flashWrite(uint32_t* address, const uint32_t* buffer)
+#define FLASH_WRITE_ATTEMPTS 3
+
+bool flashWrite(uint32_t* address, const uint32_t* buffer)
 {
   // check first if the address is on a sector boundary
   uint32_t sector = stm32_flash_get_sector((uintptr_t)address);
   uint32_t bank = stm32_flash_get_bank((uintptr_t)address);
+  bool erase = ((uintptr_t)address == _flash_sector_address(sector, bank));
 
-  if ((uintptr_t)address == _flash_sector_address(sector, bank)) {
-    if (stm32_flash_erase_sector((uintptr_t)address) < 0) return;
+  for (int attempt = 0; attempt < FLASH_WRITE_ATTEMPTS; attempt++) {
+    if (erase && stm32_flash_erase_sector((uintptr_t)address) < 0) continue;
+
+    if (stm32_flash_program((uintptr_t)address, (uint8_t*)buffer,
+                            FLASH_PAGESIZE) < 0)
+      continue;
+
+    // verify the page was actually written
+    if (memcmp(address, buffer, FLASH_PAGESIZE) == 0) return true;
   }
 
-  stm32_flash_program((uintptr_t)address, (uint8_t*)buffer, FLASH_PAGESIZE);
+  return false;
 }
 
 // TODO: move this somewhere else, as it depends on firmware layout

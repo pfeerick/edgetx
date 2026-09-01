@@ -69,7 +69,13 @@ enum FlashCheckRes {
 };
 FlashCheckRes checkFirmwareFile(unsigned int index, FlashCheckRes res);
 
+enum FlashWriteRes {
+    FW_WRITING=0,
+    FW_DONE,
+    FW_ERROR
+};
+
 void firmwareInitWrite(uint32_t index);
 bool firmwareEraseBlock(uint32_t* progress);
-bool firmwareWriteBlock(uint32_t* progress);
+FlashWriteRes firmwareWriteBlock(uint32_t* progress);
 

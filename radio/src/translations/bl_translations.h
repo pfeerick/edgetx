@@ -64,6 +64,7 @@
     #define TR_BL_DIR_EMPTY               "Adresar je prazdny"
     #define TR_BL_WRITING_FW              "Nahravani firmware ..."
     #define TR_BL_WRITING_COMPL           "Nahravani dokonceno"
+    #define TR_BL_WRITING_FAILED          "Nahravani selhalo!"
     #define TR_BL_ENABLE                  "Povoleno"
     #define TR_BL_DISABLE                 "Zakazano"
 
@@ -111,6 +112,7 @@
     #define TR_BL_DIR_EMPTY               "Katalog er tomt"
     #define TR_BL_WRITING_FW              "Installerer..."
     #define TR_BL_WRITING_COMPL           "Installation slut"
+    #define TR_BL_WRITING_FAILED          "Installation mislykkedes!"
     #define TR_BL_ENABLE                  "Aktiver"
     #define TR_BL_DISABLE                 "Deaktiver"
 
@@ -158,6 +160,7 @@
     #define TR_BL_DIR_EMPTY               "Verzeichnis leer"
     #define TR_BL_WRITING_FW              "Schreibe..."
     #define TR_BL_WRITING_COMPL           TR("Schreiben fertig","Schreiben abgeschlossen")
+    #define TR_BL_WRITING_FAILED          "Schreiben fehlgeschlagen!"
     #define TR_BL_ENABLE                  "Aktivieren"
     #define TR_BL_DISABLE                 "Deaktivieren"
 
@@ -206,6 +209,7 @@
     #define TR_BL_DIR_EMPTY               "Repertoire vide"
     #define TR_BL_WRITING_FW              "Ecriture Firmware ..."
     #define TR_BL_WRITING_COMPL           "Ecriture terminée"
+    #define TR_BL_WRITING_FAILED          "Ecriture echouee!"
     #define TR_BL_ENABLE                  "Activer"
     #define TR_BL_DISABLE                 "Désactiver"
 
@@ -253,6 +257,7 @@
     #define TR_BL_DIR_EMPTY               "Cartella vuota"
     #define TR_BL_WRITING_FW              "Scrittura..."
     #define TR_BL_WRITING_COMPL           "Scrittura completata"
+    #define TR_BL_WRITING_FAILED          "Scrittura fallita!"
     #define TR_BL_ENABLE                  "Abilita"
     #define TR_BL_DISABLE                 "Disabilita"
 
@@ -300,6 +305,7 @@
     #define TR_BL_DIR_EMPTY               "Katalog jest pusty"
     #define TR_BL_WRITING_FW              "Zapis firmware ..."
     #define TR_BL_WRITING_COMPL           "Zapis ukonczony"
+    #define TR_BL_WRITING_FAILED          "Zapis nieudany!"
     #define TR_BL_ENABLE                  "Enable"
     #define TR_BL_DISABLE                 "Disable"
 
@@ -347,6 +353,7 @@
     #define TR_BL_DIR_EMPTY                "Katalogen aer tom"
     #define TR_BL_WRITING_FW               "Skriver..."
     #define TR_BL_WRITING_COMPL            "Skrivning klar"
+    #define TR_BL_WRITING_FAILED           "Skrivning misslyckades!"
     #define TR_BL_ENABLE                   "Aktivera"
     #define TR_BL_DISABLE                  "Inaktivera"
 
@@ -394,6 +401,7 @@
     #define TR_BL_DIR_EMPTY               "Directory is empty"
     #define TR_BL_WRITING_FW              "Writing..."
     #define TR_BL_WRITING_COMPL           "Writing complete"
+    #define TR_BL_WRITING_FAILED          "Writing failed!"
     #define TR_BL_ENABLE                  "Enable"
     #define TR_BL_DISABLE                 "Disable"
 
