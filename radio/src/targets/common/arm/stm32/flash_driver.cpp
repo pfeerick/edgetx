@@ -118,7 +118,17 @@ static bool flash_drv_wait_last_op()
   return true;
 }
 
-static void flash_drv_flush_caches()
+// ES0206 2.2.15: on dual bank devices the data cache may be corrupted by a
+// read-while-write, so it must be disabled while flash is erased/programmed
+// and reset before being enabled again.
+static bool flash_drv_disable_dcache()
+{
+  bool enabled = (FLASH->ACR & FLASH_ACR_DCEN) != 0;
+  if (enabled) FLASH->ACR &= ~FLASH_ACR_DCEN;
+  return enabled;
+}
+
+static void flash_drv_flush_caches(bool dcache_enabled)
 {
   if (FLASH->ACR & FLASH_ACR_ICEN) {
     FLASH->ACR &= ~FLASH_ACR_ICEN;
@@ -126,8 +136,7 @@ static void flash_drv_flush_caches()
     FLASH->ACR &= ~FLASH_ACR_ICRST;
     FLASH->ACR |= FLASH_ACR_ICEN;
   }
-  if (FLASH->ACR & FLASH_ACR_DCEN) {
-    FLASH->ACR &= ~FLASH_ACR_DCEN;
+  if (dcache_enabled) {
     FLASH->ACR |= FLASH_ACR_DCRST;
     FLASH->ACR &= ~FLASH_ACR_DCRST;
     FLASH->ACR |= FLASH_ACR_DCEN;
@@ -192,6 +201,8 @@ static int stm32_flash_erase_sector(uint32_t address)
   // wait for any pending operation and clear stale error flags
   flash_drv_wait_last_op();
 
+  bool dcache = flash_drv_disable_dcache();
+
   if (sector > 11) sector += 4;
 
   CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
@@ -209,7 +220,7 @@ static int stm32_flash_erase_sector(uint32_t address)
   __DSB();
   __enable_irq();
 
-  flash_drv_flush_caches();
+  flash_drv_flush_caches(dcache);
 
   stm32_flash_lock();
 
@@ -270,6 +281,8 @@ static int stm32_flash_program(uint32_t address, void* data, uint32_t len)
   // wait for any pending operation and clear stale error flags
   flash_drv_wait_last_op();
 
+  bool dcache = flash_drv_disable_dcache();
+
   while (address < end_addr) {
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
     FLASH->CR |= FLASH_PSIZE_WORD;
@@ -291,7 +304,7 @@ static int stm32_flash_program(uint32_t address, void* data, uint32_t len)
   __DSB();
   __enable_irq();
 
-  flash_drv_flush_caches();
+  flash_drv_flush_caches(dcache);
 
   stm32_flash_lock();
 
