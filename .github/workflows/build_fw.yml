@@ -20,7 +20,7 @@ on:
 jobs:
   test:
     name: Run tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: |
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-fw')
@@ -72,7 +72,7 @@ jobs:
   build:
     name: Run builds
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     if: |
       github.event_name != 'pull_request' ||
       !contains(github.event.pull_request.labels.*.name, 'ci: skip-fw')
@@ -133,7 +133,7 @@ jobs:
   package:
     name: Package firmwares
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Compose release filename
         run: echo "artifact_name=edgetx-firmware-${GITHUB_REF##*/}" >> $GITHUB_ENV

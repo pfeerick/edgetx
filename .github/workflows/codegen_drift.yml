@@ -58,7 +58,7 @@ env:
 jobs:
   changes:
     name: Detect changed inputs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     outputs:
       cfn: ${{ steps.filter.outputs.cfn }}
       fonts: ${{ steps.filter.outputs.fonts }}
@@ -138,7 +138,7 @@ jobs:
     name: Custom function sort order
     needs: changes
     if: needs.changes.outputs.cfn == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     container:
       image: ghcr.io/edgetx/edgetx-dev:latest
@@ -161,7 +161,7 @@ jobs:
     name: LVGL fonts
     needs: changes
     if: needs.changes.outputs.fonts == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     container:
       image: ghcr.io/edgetx/edgetx-dev:latest
@@ -184,7 +184,7 @@ jobs:
     name: YAML parsers
     needs: changes
     if: needs.changes.outputs.yaml == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     container:
       image: ghcr.io/edgetx/edgetx-dev:latest
@@ -207,7 +207,7 @@ jobs:
     name: Web simulator radio list
     needs: changes
     if: needs.changes.outputs.radios == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     container:
       image: ghcr.io/edgetx/edgetx-dev:latest
@@ -228,7 +228,7 @@ jobs:
     name: Simulator string list
     needs: changes
     if: needs.changes.outputs.simstr == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     container:
       image: ghcr.io/edgetx/edgetx-dev:latest

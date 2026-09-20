@@ -100,7 +100,7 @@ jobs:
 
   build-linux:
     name: Linux Companion
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     needs: modules
     if: |
       (inputs.target == 'all' || inputs.target == 'linux' || inputs.target == '') &&

@@ -16,7 +16,7 @@ on:
 jobs:
   validate:
     name: Validate hw_defs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: radio/util/hw_defs
