@@ -130,18 +130,14 @@ void rotaryEncoderCheck()
   lastPins = pins;
 
 #if !defined(BOOT) && defined(COLORLCD)
-  static uint32_t last_tick = 0;
   static rotenc_t last_value = 0;
 
   rotenc_t value = rotencValue;
   rotenc_t diff = (value - last_value);
 
   if (diff != 0) {
-    uint32_t now = timersGetMsTick();
-    uint32_t dt = now - last_tick;
-    // pre-compute accumulated dt (dx/dt is done later in LVGL driver)
-    rotencDt += dt;
-    last_tick = now;
+    // timestamp of the last change (dx/dt is done later in LVGL driver)
+    rotencDt = timersGetMsTick();
     last_value = value;
   }
 #endif

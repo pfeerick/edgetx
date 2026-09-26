@@ -42,12 +42,9 @@ static uint16_t repeatCounter[2] = {0, 0};
 
 static void stepEncoder(int8_t dir)
 {
-  static uint32_t last_tick = 0;
+  // timestamp of the last step (dx/dt is done later in LVGL driver)
+  rotencDt = timersGetMsTick();
   rotencValue += dir;
-  uint32_t now = timersGetMsTick();
-  uint32_t dt = last_tick ? (now - last_tick) : 100;
-  rotencDt += dt;
-  last_tick = now;
 }
 
 static void updateFromButtons()
