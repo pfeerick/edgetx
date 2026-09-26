@@ -205,13 +205,12 @@ static uint32_t _readKeyMatrix()
     return result;
 }
 
-uint32_t readKeys()
+// Rotary encoder emulation from the left keys. Only called from
+// keysPollingCycle(), so the state below has a single writer even though
+// readKeys() is also called from other tasks.
+void pollKeys()
 {
-  uint32_t result = 0;
-
   uint32_t mkeys = _readKeyMatrix();
-  if (mkeys & (1 << KRD)) result |= 1 << KEY_ENTER;
-  if (mkeys & (1 << KRU)) result |= 1 << KEY_EXIT;
 
   uint8_t rotState = 0;
   if (mkeys & (1 << KLD)) rotState |= 1;
@@ -254,6 +253,15 @@ uint32_t readKeys()
         rotencValue--;
     }
   }
+}
+
+uint32_t readKeys()
+{
+  uint32_t result = 0;
+
+  uint32_t mkeys = _readKeyMatrix();
+  if (mkeys & (1 << KRD)) result |= 1 << KEY_ENTER;
+  if (mkeys & (1 << KRU)) result |= 1 << KEY_EXIT;
 
   return result;
 }
