@@ -29,7 +29,12 @@
 #include "keys.h"
 #include "timers_driver.h"
 
-#define REPEAT_DELAY 20
+// Rotary encoder emulation timing (ms)
+#define ROTENC_DEBOUNCE          30   // stable time before first step
+#define ROTENC_INITIAL_DELAY    400   // before first repeat
+#define ROTENC_INTERVAL_START   100   // between steps at start
+#define ROTENC_INTERVAL_MIN      20   // between steps at max speed
+#define ROTENC_ACCEL_TIME      1000   // hold time until max speed
 
 /* The output bit-order has to be (D = L, U = R):
            PL18U
@@ -75,7 +80,9 @@ enum PhysicalTrims
 volatile uint32_t rotencDt = 0;
 volatile static rotenc_t rotencValue = 0;
 static uint8_t lastRotState = 0;
-static uint8_t stateCount = 0;
+static uint32_t rotStateTime = 0;  // when lastRotState was entered
+static uint32_t rotNextStep = 0;   // when the next repeat is due
+static bool rotStepped = false;    // first step done for this press
 
 void keysInit()
 {
@@ -210,21 +217,41 @@ uint32_t readKeys()
   if (mkeys & (1 << KLD)) rotState |= 1;
   if (mkeys & (1 << KLU)) rotState |= 2;
 
+  uint32_t now = timersGetMsTick();
+
   if (rotState != lastRotState) {
     lastRotState = rotState;
-    stateCount = 0;
-  } else {
-    stateCount++;
-    if (stateCount == 3) {
+    rotStateTime = now;
+    rotStepped = false;
+  } else if (rotState == 1 || rotState == 2) {
+    uint32_t held = now - rotStateTime;
+    bool step = false;
+
+    if (!rotStepped) {
+      // Debounced press: step once, then wait before repeating
+      if (held >= ROTENC_DEBOUNCE) {
+        step = true;
+        rotStepped = true;
+        rotNextStep = now + ROTENC_INITIAL_DELAY;
+      }
+    } else if ((int32_t)(now - rotNextStep) >= 0) {
+      // Held: repeat, interval shrinking linearly from START to MIN
+      step = true;
+      if (held > ROTENC_ACCEL_TIME) held = ROTENC_ACCEL_TIME;
+      rotNextStep = now + ROTENC_INTERVAL_START -
+          (held * (ROTENC_INTERVAL_START - ROTENC_INTERVAL_MIN)) /
+              ROTENC_ACCEL_TIME;
+    }
+
+    if (step) {
 #if !defined(BOOT)
-      rotencDt = get_tmr10ms();
+      // timestamp of the last step (dx/dt is done later in LVGL driver)
+      rotencDt = now;
 #endif
       if (rotState == 1)
         rotencValue++;
-      else if (rotState == 2)
+      else
         rotencValue--;
-    } else if (stateCount >= REPEAT_DELAY) {
-      stateCount = 0;
     }
   }
 
