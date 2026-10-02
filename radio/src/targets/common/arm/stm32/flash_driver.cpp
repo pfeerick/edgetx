@@ -32,7 +32,7 @@ static uint32_t stm32_flash_get_size_kb()
   return flash_size_kb;
 }
 
-#if defined(STM32F2) || defined(STM32F4)
+#if defined(STM32F4)
 
 static uint32_t stm32_flash_get_sector(uint32_t address)
 {
