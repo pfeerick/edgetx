@@ -1,7 +1,7 @@
 include(CMakeForceCompiler)
 include(Bitmaps)
 
-set(PCB_TYPES X9LITE X9LITES X7 XLITE XLITES X9D X9D+ X9E X10 X12S PL18 T15PRO ST16 PA01 TX15 GX15 TX16SMK3 T22 V12 H17)
+set(PCB_TYPES X7 X9D+ X9E X10 X12S PL18 T15PRO ST16 PA01 TX15 GX15 TX16SMK3 T22 V12 H17)
 set(RADIO_LANGUAGES CN CZ DA DE EN ES FI FR HE HU IT JP KO NL PL PT RU SE SK TW UA)
 set(TTS_LANGUAGES CN CZ DA DE EN ES FI FR HE HU IT JP KO NL PL PT RU SE SK TW UA)
 
@@ -67,11 +67,7 @@ else()
   option(ALL_LANGUAGES "Enable runtime language selection" OFF)
 endif()
 
-if(PCB STREQUAL X7 AND PCBREV STREQUAL LR3PRO)
-  option(POWER_LED_BLUE  "Override Power LED to be normally Blue" ON)
-else()
-  option(POWER_LED_BLUE  "Override Power LED to be normally Blue" OFF)
-endif()
+option(POWER_LED_BLUE  "Override Power LED to be normally Blue" OFF)
 
 # since we reset all default CMAKE compiler flags for firmware builds, provide an alternate way for user to specify additional flags.
 set(FIRMWARE_C_FLAGS "" CACHE STRING "Additional flags for firmware target c compiler (note: all CMAKE_C_FLAGS[_*] are ignored for firmware/bootloader).")
@@ -113,7 +109,7 @@ elseif(PCB STREQUAL T22)
   include(targets/t22/CMakeLists.txt)
 elseif(PCB STREQUAL STM32H7S78_DK)
   include(targets/stm32h7s78-dk/CMakeLists.txt)
-elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X9D OR PCB STREQUAL X7 OR PCB STREQUAL X9LITE OR PCB STREQUAL X9LITES OR PCB STREQUAL XLITE OR PCB STREQUAL XLITES)
+elseif(PCB STREQUAL X9E OR PCB STREQUAL X9D+ OR PCB STREQUAL X7)
   include(targets/taranis/CMakeLists.txt)
 else()
   message(FATAL_ERROR "Unknown PCB '${PCB}'")
