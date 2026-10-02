@@ -21,6 +21,7 @@
 
 #include "stm32_hal.h"
 #include "rtc.h"
+#include "debug.h"
 
 // LSEDRV resets to LOW, which is marginal for the crystals fitted on these
 // boards. Override with -DLSE_DRIVE_STRENGTH if a board needs less.
@@ -31,9 +32,20 @@
 
 RTC_HandleTypeDef rtc = {};
 
+// Set once the LSE runs and clocks the RTC. Until then the RTC is left alone,
+// as every HAL call would only end in a timeout.
+static bool rtcRunning = false;
+
+bool rtcDriverIsRunning()
+{
+  return rtcRunning;
+}
+
 void rtcDriverSetTime(const struct gtm * t)
 {
   g_ms100 = 0; // start of next second begins now
+
+  if (!rtcRunning) return;
 
   RTC_TimeTypeDef RTC_TimeStruct = {};
   RTC_DateTypeDef RTC_DateStruct = {};
@@ -54,6 +66,14 @@ uint16_t rtcGetTimeMs(struct gtm * t)
 {
   RTC_TimeTypeDef RTC_TimeStruct;
   RTC_DateTypeDef RTC_DateStruct;
+
+  if (!rtcRunning) {
+    // RTC reset value, 2000-01-01 00:00:00
+    *t = {};
+    t->tm_year = 100;
+    t->tm_mday = 1;
+    return 0;
+  }
 
   HAL_RTC_GetTime(&rtc, &RTC_TimeStruct, RTC_FORMAT_BIN);
   HAL_RTC_GetDate(&rtc, &RTC_DateStruct, RTC_FORMAT_BIN);
@@ -123,6 +143,8 @@ int32_t rtcGetCalibration()
 
 void rtcSetCalibration(int32_t units)
 {
+  if (!rtcRunning) return;
+
   if (units > RTC_CALIB_UNIT_MAX) units = RTC_CALIB_UNIT_MAX;
   if (units < RTC_CALIB_UNIT_MIN) units = RTC_CALIB_UNIT_MIN;
 
@@ -163,6 +185,37 @@ void rtcClearCalibrationRef() {}
 
 #endif
 
+static bool rtcLSEReady()
+{
+  return __HAL_RCC_GET_FLAG(RCC_FLAG_LSERDY) != RESET;
+}
+
+// Only called once the LSE runs, so none of the waits below can time out
+static void rtcStart()
+{
+  __HAL_RCC_RTC_CLKPRESCALER(RCC_RTCCLKSOURCE_LSE);
+  __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
+
+  __HAL_RCC_RTC_ENABLE();
+  HAL_RTC_WaitForSynchro(&rtc);
+
+#if !defined(BOOT)
+  // RTC time base = LSE / ((AsynchPrediv+1) * (SynchPrediv+1)) = 1 Hz*/
+  rtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  rtc.Init.AsynchPrediv = 127;
+  rtc.Init.SynchPrediv = 255;
+  rtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  rtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  rtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  HAL_RTC_Init(&rtc);
+
+  HAL_PWR_EnableBkUpAccess();
+  HAL_RTC_WaitForSynchro(&rtc);
+#endif
+
+  rtcRunning = true;
+}
+
 void rtcInit()
 {
   rtc.Instance = RTC;
@@ -182,35 +235,19 @@ void rtcInit()
   rtcSetLSEDriveStrength();
 #endif
 
-  // Enable LSE Oscillator
-  RCC_OscInitTypeDef RCC_OscInitStruct = {};
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
-#if !defined(STM32H7RS) && !defined(STM32H5)
-  RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_NONE;
-#endif
-  RCC_OscInitStruct.LSEState       = RCC_LSE_ON;
+  // The LSE keeps running from VBAT while the radio is off. From a cold backup
+  // domain it takes about 2 s to start, and never does on boards shipped
+  // without the crystal (e.g. FlySky NB4+), so the boot does not wait for it:
+  // rtcPoll() finishes the setup once it runs.
+  SET_BIT(RCC->BDCR, RCC_BDCR_LSEON);
 
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) == HAL_OK) {
-    __HAL_RCC_RTC_CLKPRESCALER(RCC_RTCCLKSOURCE_LSE);
-    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
+  if (rtcLSEReady()) {
+    rtcStart();
+  } else {
+    TRACE("RTC: LSE not running yet");
   }
 
-  __HAL_RCC_RTC_ENABLE();
-  HAL_RTC_WaitForSynchro(&rtc);
-
 #if !defined(BOOT)
-  // RTC time base = LSE / ((AsynchPrediv+1) * (SynchPrediv+1)) = 1 Hz*/
-  rtc.Init.HourFormat = RTC_HOURFORMAT_24;
-  rtc.Init.AsynchPrediv = 127;
-  rtc.Init.SynchPrediv = 255;
-  rtc.Init.OutPut = RTC_OUTPUT_DISABLE;
-  rtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
-  rtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
-  HAL_RTC_Init(&rtc);
-
-  HAL_PWR_EnableBkUpAccess();
-  HAL_RTC_WaitForSynchro(&rtc);
-
   struct gtm utm;
   rtcGetTime(&utm);
   g_rtcTime = gmktime(&utm);
@@ -224,6 +261,28 @@ void rtcInit()
   HAL_PWR_EnableBkUpAccess();
 #endif
 }
+
+#if !defined(BOOT)
+void rtcPoll()
+{
+  if (rtcRunning || !rtcLSEReady()) return;
+
+  rtcStart();
+  TRACE("RTC: LSE started late");
+
+  struct gtm t;
+  gettime(&t);
+  if (t.tm_year > 100) {
+    // Clock set by hand or by GPS while the LSE was starting
+    rtcDriverSetTime(&t);
+  } else {
+    // Still holds the time if only the LSE had stopped, e.g. for a drive
+    // strength change, and the backup domain kept power
+    rtcGetTime(&t);
+    g_rtcTime = gmktime(&t);
+  }
+}
+#endif
 
 void rtcDisableBackupReg()
 {

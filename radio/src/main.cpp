@@ -387,7 +387,13 @@ void checkBattery()
   }
 }
 
-void periodicTick_1s() { checkBattery(); }
+void periodicTick_1s()
+{
+  checkBattery();
+#if defined(RTCLOCK)
+  rtcPoll();
+#endif
+}
 
 void periodicTick_10s()
 {

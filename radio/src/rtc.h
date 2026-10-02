@@ -57,7 +57,11 @@ void rtcSetTimeAt(const struct gtm * tm, uint16_t ms);
 gtime_t gmktime (struct gtm *tm);
 uint8_t rtcAdjust(uint16_t year, uint8_t mon, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
 
+// Finishes the RTC setup once its crystal runs, the boot does not wait for it
+void rtcPoll();
+
 // Driver interface, rtcSetTime() wraps rtcDriverSetTime()
+bool rtcDriverIsRunning();   // false while the crystal is starting, or missing
 void rtcDriverSetTime(const struct gtm * tm);
 void rtcGetTime(struct gtm * tm);
 uint16_t rtcGetTimeMs(struct gtm * tm);   // fills tm, returns 0..999 within that second

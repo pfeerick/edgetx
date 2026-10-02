@@ -640,6 +640,12 @@ void rtcResetCalibration()
 // A host timed set is a one shot, never part of a menu edit session
 static void rtcSetTimeInternal(const struct gtm * t, uint16_t ms, bool timed)
 {
+  // No hardware clock to set, nor to measure the drift against
+  if (!rtcDriverIsRunning()) {
+    rtcDriverSetTime(t);
+    return;
+  }
+
   struct gtm tm = *t;
   gtime_t newTime = gmktime(&tm);
 

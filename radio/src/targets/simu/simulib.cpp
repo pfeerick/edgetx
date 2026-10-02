@@ -455,6 +455,15 @@ uint16_t rtcGetTimeMs(struct gtm * t)
   return 0;
 }
 
+void rtcPoll()
+{
+}
+
+bool rtcDriverIsRunning()
+{
+  return true;
+}
+
 void rtcDriverSetTime(const struct gtm * t)
 {
 }
