@@ -35,8 +35,8 @@ enum ChargeState
   CHARGE_FINISHED
 };
 
-#define IS_WCHARGER_ACTIVE()              gpio_read(WCHARGER_GPIO) ? 1 : 0
-#define IS_WCHARGER_CHARGE_END_ACTIVE()   gpio_read(WCHARGER_CHARGE_END_GPIO) ? 1 : 0
+#define IS_WCHARGER_ACTIVE()              (gpio_read(WCHARGER_GPIO) ? 1 : 0)
+#define IS_WCHARGER_CHARGE_END_ACTIVE()   (gpio_read(WCHARGER_CHARGE_END_GPIO) ? 1 : 0)
 #define ENABLE_WCHARGER()                 gpio_set(WCHARGER_EN_GPIO)
 #define DISABLE_WCHARGER()                gpio_clear(WCHARGER_EN_GPIO)
 

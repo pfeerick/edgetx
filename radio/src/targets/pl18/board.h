@@ -227,15 +227,15 @@ bool isBacklightEnabled();
 #endif
 
 #if defined(RADIO_NB4P) || defined(RADIO_NV14_FAMILY)
-  #define IS_UCHARGER_ACTIVE()              gpio_read(UCHARGER_GPIO) ? (gpio_read(UCHARGER_CHARGE_END_GPIO) ? 0 : 1) : 1  
+  #define IS_UCHARGER_ACTIVE()              (gpio_read(UCHARGER_GPIO) ? (gpio_read(UCHARGER_CHARGE_END_GPIO) ? 0 : 1) : 1)
 #else
-  #define IS_UCHARGER_ACTIVE()              gpio_read(UCHARGER_GPIO) ? 1 : 0
+  #define IS_UCHARGER_ACTIVE()              (gpio_read(UCHARGER_GPIO) ? 1 : 0)
 #endif
 
 #if defined(RADIO_NB4P) || defined(RADIO_NV14_FAMILY)
-  #define IS_UCHARGER_CHARGE_END_ACTIVE()   gpio_read(UCHARGER_CHARGE_END_GPIO) ? 0 : 1
+  #define IS_UCHARGER_CHARGE_END_ACTIVE()   (gpio_read(UCHARGER_CHARGE_END_GPIO) ? 0 : 1)
 #else
-  #define IS_UCHARGER_CHARGE_END_ACTIVE()   gpio_read(UCHARGER_CHARGE_END_GPIO) ? 1 : 0
+  #define IS_UCHARGER_CHARGE_END_ACTIVE()   (gpio_read(UCHARGER_CHARGE_END_GPIO) ? 1 : 0)
 #endif
 
 #if defined(UCHARGER_EN_GPIO)
