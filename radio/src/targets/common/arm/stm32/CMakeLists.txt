@@ -106,11 +106,7 @@ if(NOT NATIVE_BUILD)
     ${STM32_DRIVER_DIR}/stm32_adc.cpp
   )
 
-  if(CPU_TYPE STREQUAL STM32F2)
-    target_sources(stm32_drivers PUBLIC
-      ${STM32_DRIVER_DIR}/stm32_spi.cpp
-    )
-  elseif(CPU_TYPE STREQUAL STM32F4)
+  if(CPU_TYPE STREQUAL STM32F4)
     target_sources(stm32_drivers PUBLIC
       ${STM32_DRIVER_DIR}/stm32_spi.cpp
     )

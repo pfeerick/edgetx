@@ -401,13 +401,6 @@ uint32_t isBootloaderStart(const uint8_t * block)
   return 1;
 }
 
-#if defined(PCBXLITES)
-bool isJackPlugged()
-{
-  return false;
-}
-#endif
-
 void serialPrintf(const char * format, ...) { }
 void serialCrlf() { }
 void serialPutc(char c) { }
@@ -436,8 +429,6 @@ uint16_t getCurrent()
 void calcConsumption()
 {
 }
-
-void handleJackConnection() {}
 
 int trainerModuleSbusGetByte(unsigned char*) { return 0; }
 
