@@ -77,8 +77,10 @@ void burnConfigDialog::getSettings()
 #if defined WIN32 || !defined __GNUC__
     if ( sambaLoc.isEmpty())
       sambaLoc = QFileInfo("sam-ba.exe").absoluteFilePath();
-    if ( dfuLoc.isEmpty())
-      dfuLoc =  QFileInfo("dfu-util.exe").absoluteFilePath();
+    // also replace a saved path that no longer exists, e.g. the old
+    // bundled dfu-util.exe next to companion.exe
+    if ( dfuLoc.isEmpty() || !QFileInfo::exists(dfuLoc))
+      dfuLoc =  QFileInfo(QApplication::applicationDirPath() + "/dfu-util/dfu-util.exe").absoluteFilePath();
 #elif defined __APPLE__
     if ( sambaLoc.isEmpty())
       sambaLoc = "/usr/local/bin/sam-ba";

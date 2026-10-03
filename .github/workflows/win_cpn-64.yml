@@ -30,6 +30,10 @@ jobs:
           update: true
           install: git make mingw-w64-x86_64-toolchain
 
+      # dfu-util is no longer packaged for mingw64, so take the ucrt64 build
+      # (it pulls in ucrt64 libusb). It runs as a separate process, and the
+      # installer gives it its own directory, so its UCRT runtime never
+      # mixes with Companion's msvcrt one.
       - name: Install Dependencies
         run: |
           pacman -S --noconfirm mingw-w64-x86_64-cmake \
@@ -48,7 +52,7 @@ jobs:
                                 mingw-w64-x86_64-SDL2 \
                                 mingw-w64-x86_64-clang \
                                 mingw-w64-x86_64-nsis \
-                                mingw-w64-x86_64-libusb \
+                                mingw-w64-ucrt-x86_64-dfu-util \
                                 mingw-w64-x86_64-openssl
           python -m pip install clang jinja2
 
@@ -56,13 +60,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           submodules: recursive
-
-      # MSYS2 dropped dfu-util from its mingw64 package database, so install
-      # the last signed mingw64 build vendored in .github/msys2 instead.
-      - name: Install dfu-util
-        working-directory: ${{github.workspace}}
-        run: |
-          pacman -U --noconfirm .github/msys2/mingw-w64-x86_64-dfu-util-0.11-2-any.pkg.tar.zst
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
@@ -77,8 +74,13 @@ jobs:
       - name: Build
         working-directory: ${{github.workspace}}
         # Execute the build.  You can specify a specific target with "--target <NAME>"
+        # Libusb1_ROOT and Dfuutil_ROOT are CMake package roots for
+        # find_package(Libusb1) and find_package(Dfuutil). They are searched
+        # before the mingw64 prefix, and the native sub-build inherits them.
         run: |
           mkdir output && \
+          Libusb1_ROOT="$(cygpath -m /ucrt64)" \
+          Dfuutil_ROOT="$(cygpath -m /ucrt64)" \
           CMAKE_PREFIX_PATH=$RUNNER_WORKSPACE/Qt/$QT_VERSION/$MINGW_PATH \
           tools/build-companion.sh "$(pwd)" "$(pwd)/output/"
 

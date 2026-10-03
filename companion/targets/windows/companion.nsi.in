@@ -107,6 +107,9 @@ Section "EdgeTX Companion @VERSION_FAMILY@" SecDummy
   Delete "$INSTDIR\edgetx-*-simulator.dll"
   RMDir /r "$INSTDIR\lang"
   RMDir /r "$INSTDIR\phonon_backend"
+  ; dfu-util and libusb now live in $INSTDIR\dfu-util
+  Delete "$INSTDIR\dfu-util.exe"
+  Delete "$INSTDIR\libusb-1.0.dll"
 
   SetOutPath "$INSTDIR"
 
@@ -194,6 +197,7 @@ Section "un.EdgeTX Companion @VERSION_FAMILY@"
   Delete "$INSTDIR\dfu-util.exe"
   Delete "$INSTDIR\libusb0.dll"
   Delete "$INSTDIR\libusb-1.0.dll"
+  RMDir /r "$INSTDIR\dfu-util"
   ; OpenSSL libs
   Delete "$INSTDIR\libssl-1_1.dll"
   Delete "$INSTDIR\libssl-1_1-x64.dll"

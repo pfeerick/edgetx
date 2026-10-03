@@ -423,12 +423,24 @@ elseif(WIN32)
 
     set(LIBUSB1_LIBRARY_FILE "${LIBUSB1_LIBRARY_DIR}/libusb-1.0.dll")
 
+    # dfu-util.exe and the DLLs it needs get their own directory. It may use
+    # a different C runtime (e.g. UCRT) to Companion, and Windows looks for
+    # DLLs in the executable's directory first, so keep it away from
+    # Companion's runtime DLLs. Companion itself doesn't use libusb.
+    set(DFU_UTIL_INSTALL_DESTINATION "${INSTALL_DESTINATION}/dfu-util")
+
     if(EXISTS "${LIBUSB1_LIBRARY_FILE}")
-      install(FILES "${LIBUSB1_LIBRARY_FILE}" DESTINATION ${INSTALL_DESTINATION})
+      install(FILES "${LIBUSB1_LIBRARY_FILE}" DESTINATION ${DFU_UTIL_INSTALL_DESTINATION})
     endif()
 
     if(DFU_UTIL_FOUND)
-      install(FILES "${DFU_UTIL_PATH}" DESTINATION ${INSTALL_DESTINATION})
+      install(FILES "${DFU_UTIL_PATH}" DESTINATION ${DFU_UTIL_INSTALL_DESTINATION})
+
+      # MinGW builds of dfu-util also need the winpthread they were built with
+      get_filename_component(DFU_UTIL_DIR "${DFU_UTIL_PATH}" DIRECTORY)
+      if(EXISTS "${DFU_UTIL_DIR}/libwinpthread-1.dll")
+        install(FILES "${DFU_UTIL_DIR}/libwinpthread-1.dll" DESTINATION ${DFU_UTIL_INSTALL_DESTINATION})
+      endif()
     endif()
   endif()
 
