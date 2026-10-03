@@ -356,8 +356,8 @@ void bootloaderDrawScreen(BootloaderState st, int opt, const char* str)
         opt = 100;  // Completed > 100%
       } else if (st == ST_FLASH_ERROR) {
         // the bar stays where the write gave up
-        lcd.drawText(LCD_W / 2, (LCD_H - PROGRESS_H) / 2 - EdgeTxStyles::STD_FONT_HEIGHT,
-                     LV_SYMBOL_CLOSE " " TR_BL_WRITING_FAILED, CENTERED | BL_FOREGROUND);
+        lcd->drawText(LCD_W / 2, (LCD_H - PROGRESS_H) / 2 - EdgeTxStyles::STD_FONT_HEIGHT,
+                      LV_SYMBOL_CLOSE " " TR_BL_WRITING_FAILED, CENTERED | BL_FOREGROUND);
       }
 
       lcd->drawRect(PROGRESS_X, (LCD_H - PROGRESS_H) / 2, PROGRESS_W, PROGRESS_H, LINE_H, SOLID, BL_SELECTED);
@@ -413,7 +413,7 @@ void bootloaderDrawScreen(BootloaderState st, int opt, const char* str)
         pos = lcd->drawText(FOOTER_X1, LCD_H - FOOTER_Y1, LV_SYMBOL_CHARGE " " TR_BL_WRITING_COMPL, FOOTER_ALIGN1 | BL_FOREGROUND);
       }
       else if (st == ST_FLASH_ERROR) {
-        pos = lcd.drawText(FOOTER_X1, LCD_H - FOOTER_Y1, LV_SYMBOL_CHARGE " " TR_BL_RETRY_OR_DFU, FOOTER_ALIGN1 | BL_FOREGROUND);
+        pos = lcd->drawText(FOOTER_X1, LCD_H - FOOTER_Y1, LV_SYMBOL_CHARGE " " TR_BL_RETRY_OR_DFU, FOOTER_ALIGN1 | BL_FOREGROUND);
       }
     }
 #if LANDSCAPE
