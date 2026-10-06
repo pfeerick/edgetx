@@ -161,6 +161,89 @@ void Window::window_event_cb(lv_event_t *e)
     window->eventHandler(e);
 }
 
+static bool isDescendant(const lv_obj_t *obj, const lv_obj_t *ancestor)
+{
+  for (obj = lv_obj_get_parent(obj); obj; obj = lv_obj_get_parent(obj))
+    if (obj == ancestor) return true;
+  return false;
+}
+
+// Same checks as LVGL group navigation (focus_next_core)
+static bool isNavigable(lv_obj_t *obj, const lv_obj_t *container)
+{
+  if (lv_obj_has_state(obj, LV_STATE_DISABLED)) return false;
+  for (; obj && obj != container; obj = lv_obj_get_parent(obj))
+    if (lv_obj_has_flag(obj, LV_OBJ_FLAG_HIDDEN)) return false;
+  return true;
+}
+
+// Last object revealEdgeContent was considered for (compared only, never used)
+static lv_obj_t *revealFocused = nullptr;
+
+// Scroll on focus only brings the focused object into view, so content that
+// cannot take focus (titles, headers, footers) before the first or after the
+// last focusable object would never be shown when using the rotary encoder or
+// keys. When the focused object is the first (or last) focusable object in a
+// scrollable container, scroll the container toward that edge as far as
+// possible while keeping the focused object fully visible.
+// If the focused object is both first and last, the top edge is revealed.
+static void revealEdgeContent(Window *focusedWindow)
+{
+  lv_obj_t *focused = focusedWindow->getLvObj();
+  if (!lv_obj_has_flag(focused, LV_OBJ_FLAG_SCROLL_ON_FOCUS)) return;
+
+  lv_group_t *group = (lv_group_t *)lv_obj_get_group(focused);
+  if (!group) return;
+
+  lv_obj_update_layout(focused);
+
+  // coordinates are updated as each container scrolls
+  const lv_area_t &f = focused->coords;
+
+  for (lv_obj_t *p = lv_obj_get_parent(focused); p; p = lv_obj_get_parent(p)) {
+    if (!lv_obj_has_flag(p, LV_OBJ_FLAG_SCROLLABLE) ||
+        !(lv_obj_get_scroll_dir(p) & LV_DIR_VER))
+      continue;
+
+    Window *w = (Window *)lv_obj_get_user_data(p);
+    if (!w || w->hasWindowFlag(NO_FORCED_SCROLL)) continue;
+
+    lv_coord_t scroll_top = lv_obj_get_scroll_top(p);
+    lv_coord_t scroll_bottom = lv_obj_get_scroll_bottom(p);
+    if (scroll_top <= 0 && scroll_bottom <= 0) continue;
+
+    bool isFirst = true, isLast = true;
+    for (auto n = (lv_obj_t **)_lv_ll_get_head(&group->obj_ll); n;
+         n = (lv_obj_t **)_lv_ll_get_next(&group->obj_ll, n)) {
+      lv_obj_t *obj = *n;
+      if (obj == focused || !isDescendant(obj, p) || !isNavigable(obj, p))
+        continue;
+      // Objects overlapping the focused one vertically (same row) are ignored
+      if (obj->coords.y2 < f.y1) isFirst = false;
+      if (obj->coords.y1 > f.y2) isLast = false;
+      if (!isFirst && !isLast) break;
+    }
+
+    // Same visible area as LVGL scroll on focus (scroll_area_into_view)
+    lv_coord_t border = lv_obj_get_style_border_width(p, LV_PART_MAIN);
+    if (isFirst) {
+      lv_coord_t bottom = p->coords.y2 - border -
+                          lv_obj_get_style_pad_bottom(p, LV_PART_MAIN);
+      lv_coord_t dy = LV_MIN(scroll_top, bottom - f.y2);
+      if (dy > 0) lv_obj_scroll_by(p, 0, dy, LV_ANIM_OFF);
+    } else if (isLast) {
+      lv_coord_t top =
+          p->coords.y1 + border + lv_obj_get_style_pad_top(p, LV_PART_MAIN);
+      lv_coord_t dy = LV_MIN(scroll_bottom, f.y1 - top);
+      if (dy > 0) lv_obj_scroll_by(p, 0, -dy, LV_ANIM_OFF);
+    }
+
+    // A scroll handler (e.g. Lua 'scrolled') may have deleted the focused
+    // window (deleting any ancestor also deletes it)
+    if (focusedWindow->deleted()) return;
+  }
+}
+
 void Window::eventHandler(lv_event_t *e)
 {
   static bool _longPressed = false;
@@ -174,34 +257,6 @@ void Window::eventHandler(lv_event_t *e)
   switch (code) {
     case LV_EVENT_SCROLL: {
       lv_obj_t *target = lv_event_get_target(e);
-      // exclude pointer based scrolling (only focus scrolling)
-      if (!lv_obj_is_scrolling(target) && ((windowFlags & NO_FORCED_SCROLL) == 0)) {
-        lv_point_t *p = (lv_point_t *)lv_event_get_param(e);
-        lv_coord_t scroll_y = lv_obj_get_scroll_y(target);
-        lv_coord_t scroll_bottom = lv_obj_get_scroll_bottom(target);
-
-        // Force scroll to top or bottom when near either edge.
-        // Only applies when using rotary encoder or keys.
-        // Limit is 2 standard size labels with some extra padding
-        constexpr lv_coord_t NEAR_LIMIT =
-            (EdgeTxStyles::STD_FONT_HEIGHT + PAD_TINY * 2 + PAD_OUTLINE * 2) * 2 + PAD_MEDIUM * 2;
-
-        TRACE("SCROLL[x=%d;y=%d;top=%d;bottom=%d,limit=%d]", p->x, p->y, scroll_y,
-              scroll_bottom,NEAR_LIMIT);
-
-        lv_coord_t scroll_by = 0;
-        if (scroll_y > 0 && scroll_y <= NEAR_LIMIT && p->y > 0) {
-          scroll_by = scroll_y;
-        } else if (scroll_bottom > 0 && scroll_bottom <= NEAR_LIMIT && p->y < 0) {
-          scroll_by = -scroll_bottom;
-        }
-        if (scroll_by != 0) {
-          lv_obj_scroll_by(target, 0, scroll_by, LV_ANIM_OFF);
-          // Don't call scrollHandler until next update
-          return;
-        }
-      }
-
       lv_coord_t scroll_x = lv_obj_get_scroll_x(target);
       lv_coord_t scroll_y = lv_obj_get_scroll_y(target);
       if (scrollHandler) scrollHandler(scroll_x, scroll_y);
@@ -221,10 +276,20 @@ void Window::eventHandler(lv_event_t *e)
       TRACE("CANCEL[%p]", this);
       onCancel();
       break;
-    case LV_EVENT_FOCUSED:
+    case LV_EVENT_FOCUSED: {
       if (focusHandler) focusHandler(true);
-      break;
+      // LVGL also sends FOCUSED when the group edit mode changes,
+      // only reveal edge content on an actual focus change.
+      bool focusChanged = (lvobj != revealFocused);
+      revealFocused = lvobj;
+      // Only applies when using rotary encoder or keys.
+      lv_indev_t *indev = lv_indev_get_act();
+      if (focusChanged && !deleted() &&
+          (!indev || lv_indev_get_type(indev) != LV_INDEV_TYPE_POINTER))
+        revealEdgeContent(this);
+    } break;
     case LV_EVENT_DEFOCUSED:
+      if (revealFocused == lvobj) revealFocused = nullptr;
       if (focusHandler) focusHandler(false);
       break;
     case LV_EVENT_LONG_PRESSED:
