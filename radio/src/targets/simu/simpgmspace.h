@@ -21,8 +21,15 @@
 
 #pragma once
 
-#include <unistd.h>
-#define sleep(x) usleep(1000*x)
+#if defined(_MSC_VER)
+  // no unistd.h with MSVC
+  #include <chrono>
+  #include <thread>
+  #define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
+#else
+  #include <unistd.h>
+  #define sleep(x) usleep(1000*x)
+#endif
 
 #include <assert.h>
 #include <inttypes.h>
