@@ -41,10 +41,26 @@ QString getRadioInterfaceCmd()
     return bcd.getSAMBA();
 }
 
+QStringList getRdfuArgs(const QString & cmd, const QString & filename)
+{
+  // rdfu finds the DFU interface from the address, so it needs no alt setting
+  // and ignores the dfu-util arguments. It leaves DFU mode after a write.
+  QStringList args;
+  args << (cmd == "-U" ? "read" : "write");
+  args << "--vendor" << "0483" << "--product" << "df11";
+  args << "--start-address" << "0x08000000";
+  if (cmd == "-U")
+    args << "--length" << QString::number(Boards::getFlashSize(getCurrentBoard()));
+  args << filename;
+  return args;
+}
+
 QStringList getDfuArgs(const QString & cmd, const QString & filename)
 {
   QStringList args;
   burnConfigDialog bcd;
+  if (isRdfuCommand(bcd.getDFU()))
+    return getRdfuArgs(cmd, filename);
   args << bcd.getDFUArgs();
   if (!filename.endsWith(".dfu"))
     args << "--dfuse-address" << "0x08000000";
@@ -165,6 +181,14 @@ bool writeFirmware(const QString & filename, ProgressWidget * progress)
     qDebug() << "writeFirmware: writing" << path << "from" << filename;
     CopyProcess copyProcess(filename, path, progress);
     return copyProcess.run();
+  }
+
+  if (IS_STM32(getCurrentBoard()) && isRdfuCommand(getRadioInterfaceCmd()) &&
+      filename.endsWith(".dfu", Qt::CaseInsensitive)) {
+    // rdfu would write the DfuSe container to flash as raw data
+    QMessageBox::warning(NULL, CPN_STR_TTL_ERROR,
+                         QCoreApplication::translate("RadioInterface", "rdfu cannot write .dfu files, please use a .bin firmware file."));
+    return false;
   }
 
   qDebug() << "writeFirmware: writing" << filename << "with" << getRadioInterfaceCmd() << getWriteFirmwareArgs(filename);

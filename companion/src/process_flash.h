@@ -30,6 +30,9 @@ class ProgressWidget;
 class QProcess;
 class QTimer;
 
+// true if cmd is the rdfu DFU tool rather than dfu-util
+bool isRdfuCommand(const QString &cmd);
+
 class FlashProcess : public QObject
 {
   Q_OBJECT
@@ -61,11 +64,13 @@ protected:
   bool hasErrors;
   QString currStdoutLine;
   QString currStderrLine;
+  QString rdfuProgressLine;
   unsigned int lfuse;
   unsigned int hfuse;
   unsigned int efuse;
   enum FlashPhase { READING, WRITING, VERIFYING };
   FlashPhase flashPhase;
+  bool rdfu;
 #if !__GNUC__
   QTimer *killTimer;
 #endif
