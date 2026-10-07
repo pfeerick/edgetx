@@ -42,6 +42,8 @@
 
 extern uint8_t * eeprom;
 
+#include <string>
+
 #define __disable_irq()
 #define __enable_irq()
 
@@ -88,6 +90,9 @@ void simuMain();
 #else
   #define simuFatfsSetPaths(...)
 #endif
+
+std::string simuFatfsGetCurrentPath();
+std::string simuFatfsGetRealPath(const std::string &p);
 
 #if defined(TRACE_SIMPGMSPACE)
   #undef TRACE_SIMPGMSPACE
