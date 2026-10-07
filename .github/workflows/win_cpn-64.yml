@@ -5,12 +5,13 @@ on:
   workflow_dispatch:
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
-  CMAKE_GENERATOR: "MSYS Makefiles"
+  CMAKE_GENERATOR: "Ninja"
   QT_VERSION: "5.15.2"
-  MINGW_VERSION: "win64_mingw81"
-  MINGW_PATH: "mingw81_64"
+  QT_ARCH: "win64_msvc2019_64"
+  SDL2_VERSION: "2.32.10"
+  # LLVM's clang targeting the MSVC ABI, with the Visual Studio headers and libs
+  CXX: "clang++"
+  CC: "clang"
 
 jobs:
   build:
@@ -21,40 +22,21 @@ jobs:
     runs-on: windows-2022
     defaults:
       run:
-        shell: msys2 {0}
+        shell: bash
 
     steps:
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: git make mingw-w64-x86_64-toolchain
-
-      - name: Install Dependencies
-        run: |
-          pacman -S --noconfirm mingw-w64-x86_64-cmake \
-                                mingw-w64-x86_64-python-pip \
-                                mingw-w64-x86_64-python-pillow \
-                                mingw-w64-x86_64-python-lz4 \
-                                mingw-w64-x86_64-libjpeg-turbo \
-                                mingw-w64-x86_64-zlib \
-                                mingw-w64-x86_64-libtiff \
-                                mingw-w64-x86_64-freetype \
-                                mingw-w64-x86_64-lcms2 \
-                                mingw-w64-x86_64-libwebp \
-                                mingw-w64-x86_64-openjpeg2 \
-                                mingw-w64-x86_64-libimagequant \
-                                mingw-w64-x86_64-libraqm \
-                                mingw-w64-x86_64-SDL2 \
-                                mingw-w64-x86_64-clang \
-                                mingw-w64-x86_64-nsis \
-                                mingw-w64-x86_64-openssl
-          python -m pip install clang jinja2
-
       - name: Check out the repo
         uses: actions/checkout@v7
         with:
           submodules: recursive
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Dependencies
+        run: python -m pip install --upgrade pip clang jinja2 lz4 pillow
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
@@ -62,16 +44,42 @@ jobs:
           AQT_CONFIG: ${{ github.workspace }}/tools/aqt-settings.ini
         with:
           cache: true
-          cache-key-prefix: 'install-qt-action-win64'
+          cache-key-prefix: 'install-qt-action-${{ env.QT_ARCH }}'
           version: ${{ env.QT_VERSION }}
-          arch: ${{ env.MINGW_VERSION }}
+          arch: ${{ env.QT_ARCH }}
+          # Python 3.12 above already has the codegen packages, another
+          # interpreter on PATH would shadow it
+          setup-python: 'false'
+
+      - name: Setup SDL2
+        run: |
+          archive="SDL2-devel-${SDL2_VERSION}-VC.zip"
+          curl -fsSL -o "${RUNNER_TEMP}/${archive}" \
+            "https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/${archive}"
+          unzip -q "${RUNNER_TEMP}/${archive}" -d "${RUNNER_TEMP}/SDL2"
+          echo "SDL2_ROOT=${RUNNER_TEMP}/SDL2/SDL2-${SDL2_VERSION}" >> "${GITHUB_ENV}"
+
+      # The simulator uses pthreads, which MSVC doesn't provide
+      - name: Install pthreads4w
+        run: |
+          "$(cygpath -u "${VCPKG_INSTALLATION_ROOT}")/vcpkg.exe" install pthreads:x64-windows
+          echo "PTHREADS4W_ROOT=${VCPKG_INSTALLATION_ROOT}/installed/x64-windows" >> "${GITHUB_ENV}"
+
+      - name: Setup MSVC
+        shell: pwsh
+        run: .github/scripts/setup-msvc.ps1
+
+      - name: Install NSIS
+        uses: repolevedavaj/install-nsis@v1
+        with:
+          nsis-version: '3.11'
 
       - name: Build
         working-directory: ${{github.workspace}}
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
           mkdir output && \
-          CMAKE_PREFIX_PATH=$RUNNER_WORKSPACE/Qt/$QT_VERSION/$MINGW_PATH \
+          CMAKE_PREFIX_PATH="$QT_ROOT_DIR;$SDL2_ROOT;$PTHREADS4W_ROOT" \
           tools/build-companion.sh "$(pwd)" "$(pwd)/output/"
 
       - name: Compose release filename
