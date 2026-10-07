@@ -148,7 +148,7 @@ set(HWDEFS_QRC "${CMAKE_CURRENT_BINARY_DIR}/hwdefs.qrc")
 set(HWDEFS_CMD "${COMPANION_SRC_DIRECTORY}/../util/generate_hwdefs_qrc.py")
 
 add_custom_command(OUTPUT ${HWDEFS_QRC}
-  COMMAND ${HWDEFS_CMD} -d ${HWDEFS_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${HWDEFS_CMD} -d ${HWDEFS_DIR}
                         -t ${HWDEFS_TMPL}
                         -p ${HWDEFS_PHDR}
                         -o ${HWDEFS_QRC}
