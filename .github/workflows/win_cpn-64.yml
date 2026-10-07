@@ -76,6 +76,9 @@ jobs:
 
       - name: Build
         working-directory: ${{github.workspace}}
+        env:
+          # DROP: build a subset of plugins while iterating on CI
+          EDGETX_SIMU_PLUGINS: "x7 x9d tx16s nv14"
         # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
           mkdir output && \
