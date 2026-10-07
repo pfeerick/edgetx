@@ -70,6 +70,10 @@ get_property(SIMU_SRC_OPTIONS
 target_compile_options(simu_drivers PRIVATE ${SIMU_SRC_OPTIONS})
 
 set_property(TARGET simu_drivers PROPERTY POSITION_INDEPENDENT_CODE ON)
+if(WIN32)
+  # dirent, and pthreads4w for MSVC builds
+  target_include_directories(simu_drivers SYSTEM PRIVATE ${WIN_INCLUDE_DIRS})
+endif()
 
 if(SIMU_AUX)
   target_compile_definitions(simu_drivers PRIVATE -DSIMU_COM_PORT=${SIMU_COM_PORT})

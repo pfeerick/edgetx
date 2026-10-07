@@ -45,6 +45,21 @@
   #include <stdlib.h>
   #include <sys/utime.h>
   #define mkdir(s, f) _mkdir(s)
+  // dirent.h (tronkko/dirent) is included below inside namespace simu and
+  // includes these itself, so include them globally first
+  #ifndef WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
+  #endif
+  #ifndef NOMINMAX
+    #define NOMINMAX
+  #endif
+  #define NOGDI
+  #include <windows.h>
+  #include <ctype.h>
+  #include <malloc.h>
+  #include <string.h>
+  #include <sys/types.h>
+  #include <wchar.h>
 #else
   #include <sys/time.h>
   #include <utime.h>
