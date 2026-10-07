@@ -98,6 +98,7 @@ if(Qt5Widgets_FOUND)
     )
   list(APPEND SIMULATOR_SRC ${SIMU_SRC} opentxsimulator.cpp)
   add_library(${SIMULATOR_TARGET} SHARED ${SIMULATOR_SRC})
+  set_target_properties(${SIMULATOR_TARGET} PROPERTIES PREFIX "lib")
 
   target_compile_options(${SIMULATOR_TARGET} PRIVATE ${SIMU_SRC_OPTIONS})
   target_compile_definitions(${SIMULATOR_TARGET} PUBLIC ${APP_COMMON_DEFINES})

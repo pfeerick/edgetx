@@ -109,8 +109,6 @@ struct YamlNode
   uint8_t tag_len() const { return tag ? strlen(tag) : 0; }
 };
 
-#if !defined(_MSC_VER)
-
 #define YAML_TAG(str)                           \
     .tag=(str)
 
@@ -163,49 +161,3 @@ struct YamlNode
                       .u={.is_active=NULL}             \
             }}                                                          \
     }
-
-#else // MSVC++ compat
-
-#define YAML_TAG(str)                           \
-    (str)
-
-#define YAML_IDX                                \
-    { 0, YDT_IDX, .elmts=0, YAML_TAG("idx") }
-
-#define YAML_SIGNED(tag, bits)                          \
-    { (bits), YDT_SIGNED, .elmts=0, YAML_TAG(tag) }
-
-#define YAML_UNSIGNED(tag, bits)                        \
-    { (bits), YDT_UNSIGNED, .elmts=0, YAML_TAG(tag) }
-
-#define YAML_SIGNED_CUST(tag, bits, f_cust_to_uint, f_uint_to_cust)     \
-    { (bits), YDT_SIGNED, .elmts=0, YAML_TAG(tag), {{ (const YamlNode*)f_cust_to_uint, {{ (YamlNode::is_active_func)f_uint_to_cust, 0 }}}} }
-
-#define YAML_UNSIGNED_CUST(tag, bits, f_cust_to_uint, f_uint_to_cust)   \
-    { (bits), YDT_UNSIGNED, .elmts=0, YAML_TAG(tag), {{ (const YamlNode*)f_cust_to_uint, {{ (YamlNode::is_active_func)f_uint_to_cust, 0}}}} }
-
-#define YAML_STRING(tag, max_len)                               \
-    { ((max_len)<<3), YDT_STRING, .elmts=0, YAML_TAG(tag) }
-
-#define YAML_STRUCT(tag, bits, nodes, f_is_active)                     \
-    { (bits), YDT_ARRAY, 1, YAML_TAG(tag), {{ (nodes), {{ (f_is_active) }}}} }
-
-#define YAML_ARRAY(tag, bits, max_elmts, nodes, f_is_active)           \
-    { (bits), YDT_ARRAY, (max_elmts), YAML_TAG(tag), {{ (nodes), {{ (f_is_active) }}}} }
-
-#define YAML_ENUM(tag, bits, id_strs)                                   \
-    { (bits), YDT_ENUM, .elmts=0, YAML_TAG(tag), {{ (const YamlNode*)(id_strs) }} }
-
-#define YAML_UNION(tag, bits, nodes, f_sel_m)                       \
-    { (bits), YDT_UNION, .elmts=0, YAML_TAG(tag), {{ (nodes), {{ (YamlNode::is_active_func)(f_sel_m) }}}} }
-
-#define YAML_PADDING(bits)                      \
-    { (bits), YDT_PADDING }
-
-#define YAML_END                                \
-    { 0, YDT_NONE }
-
-#define YAML_ROOT(nodes)                                                \
-    { 0, YDT_ARRAY, 1, NULL, {{ (nodes), {{ NULL }}}} }
-
-#endif
