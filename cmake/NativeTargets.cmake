@@ -86,13 +86,6 @@ if(WIN32)
     message(STATUS "pthreads4w: ${PTHREADS4W_LIBRARY} ${PTHREADS4W_DLL}")
     list(APPEND WIN_INCLUDE_DIRS "${PTHREADS4W_INCLUDE_DIR}")
     list(APPEND WIN_LINK_LIBRARIES "${PTHREADS4W_LIBRARY}")
-    # The simulator's SD card emulation needs dirent.h, which MinGW also
-    # provides (e.g. vcpkg's "dirent" port, tronkko/dirent)
-    find_path(DIRENT_INCLUDE_DIR dirent.h)
-    if(NOT DIRENT_INCLUDE_DIR)
-      message(FATAL_ERROR "dirent.h not found, add it to CMAKE_PREFIX_PATH")
-    endif()
-    list(APPEND WIN_INCLUDE_DIRS "${DIRENT_INCLUDE_DIR}")
   endif()
   # TODO: is that still necessary?
   set(CMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES OFF)

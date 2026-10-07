@@ -59,10 +59,10 @@ jobs:
           unzip -q "${RUNNER_TEMP}/${archive}" -d "${RUNNER_TEMP}/SDL2"
           echo "SDL2_ROOT=${RUNNER_TEMP}/SDL2/SDL2-${SDL2_VERSION}" >> "${GITHUB_ENV}"
 
-      # The simulator uses pthreads and dirent.h, which MSVC doesn't provide
-      - name: Install pthreads4w and dirent
+      # The simulator uses pthreads, which MSVC doesn't provide
+      - name: Install pthreads4w
         run: |
-          "$(cygpath -u "${VCPKG_INSTALLATION_ROOT}")/vcpkg.exe" install pthreads:x64-windows dirent:x64-windows
+          "$(cygpath -u "${VCPKG_INSTALLATION_ROOT}")/vcpkg.exe" install pthreads:x64-windows
           echo "PTHREADS4W_ROOT=${VCPKG_INSTALLATION_ROOT}/installed/x64-windows" >> "${GITHUB_ENV}"
 
       - name: Setup MSVC
