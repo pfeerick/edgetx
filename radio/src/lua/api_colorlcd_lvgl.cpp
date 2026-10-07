@@ -438,6 +438,7 @@ static int luaLvglGetScrollPos(lua_State *L)
   return 0;
 }
 
+extern "C" {
 // lvgl functions
 LROT_BEGIN(lvgllib, NULL, 0)
   LROT_FUNCENTRY(clear, luaLvglClear)
@@ -615,7 +616,6 @@ LROT_BEGIN(lvgl_mt, NULL, LROT_MASK_GC_INDEX)
   LROT_FUNCENTRY(getScrollPos, luaLvglGetScrollPos)
 LROT_END(lvgl_mt, NULL, LROT_MASK_GC_INDEX)
 
-extern "C" {
 LUALIB_API int luaopen_lvgl(lua_State *L)
 {
   luaL_rometatable(L, LVGL_SIMPLEMETATABLE, LROT_TABLEREF(lvgl_base_mt));

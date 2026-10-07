@@ -1413,6 +1413,7 @@ static int luaLcdExitFullScreen(lua_State *L)
   return 0;
 }
 
+extern "C" {
 LROT_BEGIN(lcdlib, NULL, 0)
   LROT_FUNCENTRY( refresh, luaLcdRefresh )
   LROT_FUNCENTRY( clear, luaLcdClear )
@@ -1463,9 +1464,8 @@ LROT_BEGIN(bitmaplib, NULL, 0)
   LROT_FUNCENTRY( toMask, luaBitmapTo8bitMask )
 LROT_END(bitmaplib, NULL, 0)
 
-extern "C" {
-  LUALIB_API int luaopen_bitmap(lua_State * L) {
-    luaL_rometatable( L, BITMAP_METATABLE,  LROT_TABLEREF(bitmap_mt));
-    return 0;
-  }
+LUALIB_API int luaopen_bitmap(lua_State * L) {
+  luaL_rometatable( L, BITMAP_METATABLE,  LROT_TABLEREF(bitmap_mt));
+  return 0;
+}
 }
