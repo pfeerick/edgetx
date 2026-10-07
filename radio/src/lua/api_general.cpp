@@ -2899,6 +2899,7 @@ static int luaApplyRGBLedColors(lua_State * L)
   { "EVT_"#xxx"_LONG",  LRO_NUMVAL(EVT_KEY_LONG(yyy)) },        \
   { "EVT_"#xxx"_REPT",  LRO_NUMVAL(EVT_KEY_REPT(yyy)) },
 
+extern "C" {
 LROT_BEGIN(etxlib, NULL, 0)
   LROT_FUNCENTRY( getTime, luaGetTime )
   LROT_FUNCENTRY( getDateTime, luaGetDateTime )
@@ -3241,3 +3242,4 @@ LROT_BEGIN(etxstr, NULL, 0)
   LROT_LUDENTRY( CHAR_TELEMETRY, STR_CHAR_TELEMETRY )
   LROT_LUDENTRY( CHAR_LUA, STR_CHAR_LUA )
 LROT_END(etxstr, NULL, 0)
+}
