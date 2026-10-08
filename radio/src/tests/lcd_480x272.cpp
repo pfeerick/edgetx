@@ -72,7 +72,7 @@ bool checkScreenshot_colorlcd(const BitmapBuffer* dc, const char* test)
   filename += 'x' + std::to_string(LCD_H);
   filename += ".png";
 
-  std::string fullpath = TESTS_PATH "/images/color/" + filename;
+  std::string fullpath = "images/color/" + filename;
 
   std::unique_ptr<BitmapBuffer> testPict(
       BitmapBuffer::loadBitmap(fullpath.c_str()));
@@ -266,7 +266,7 @@ TEST(Lcd_colorlcd, bitmap)
 
   dc.setClippingRect(100, 400, 50, 200);
   std::unique_ptr<BitmapBuffer> bmp(
-      BitmapBuffer::loadBitmap(TESTS_PATH "/images/color/edgetx.png"));
+      BitmapBuffer::loadBitmap("images/color/edgetx.png"));
   dc.drawBitmap(0, 0, bmp.get());
   dc.drawBitmap(320, 0, bmp.get());
   dc.drawBitmap(0, 150, bmp.get());

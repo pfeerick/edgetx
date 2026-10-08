@@ -26,6 +26,7 @@
 #include <memory>
 #include "gtests.h"
 #include "hal/adc_driver.h"
+#include "location.h"
 
 using ::testing::TestEventListener;
 using ::testing::EmptyTestEventListener;
@@ -158,6 +159,7 @@ int main(int argc, char **argv)
 {
   QCoreApplication app(argc, argv);
   simuInit();
+  simuFatfsSetPaths(TESTS_PATH, nullptr);
   adcInit(&simu_adc_driver);
 
 #if !defined(COLORLCD)
