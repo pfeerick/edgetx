@@ -77,11 +77,6 @@ declare -a simulator_plugins=(x9lite x9lites
                               x10 x10express x12s
                               t15 t16 t18 t20 t20v2 tx16s f16 v14 v16)
 
-# DROP: build a subset of plugins while iterating on CI
-if [[ -n "${EDGETX_SIMU_PLUGINS}" ]]; then
-  read -r -a simulator_plugins <<< "${EDGETX_SIMU_PLUGINS}"
-fi
-
 for plugin in "${simulator_plugins[@]}"
 do
     BUILD_OPTIONS="${COMMON_OPTIONS} "
