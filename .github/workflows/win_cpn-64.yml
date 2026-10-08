@@ -63,11 +63,11 @@ jobs:
         run: |
           pacman -U --noconfirm .github/msys2/mingw-w64-x86_64-dfu-util-0.11-2-any.pkg.tar.zst
 
-      # Official NSIS build rather than the MSYS2 package, matching main and 2.12
+      # Official NSIS build rather than the MSYS2 package
       - name: Install NSIS
         uses: repolevedavaj/install-nsis@v1
         with:
-          nsis-version: '3.11'
+          nsis-version: '3.13'
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
