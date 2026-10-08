@@ -626,6 +626,7 @@ static int luaLcdDrawCombobox(lua_State *L)
   return 0;
 }
 
+extern "C" {
 LROT_BEGIN(lcdlib, NULL, 0)
   LROT_FUNCENTRY( refresh, luaLcdRefresh )
   LROT_FUNCENTRY( clear, luaLcdClear )
@@ -652,8 +653,7 @@ LROT_END(lcdlib, NULL, 0)
 LROT_BEGIN(bitmaplib, NULL, 0)
 LROT_END(bitmaplib, NULL, 0)
 
-extern "C" {
-  LUALIB_API int luaopen_bitmap(lua_State * L) {
-    return 0;
-  }
+LUALIB_API int luaopen_bitmap(lua_State * L) {
+  return 0;
+}
 }
