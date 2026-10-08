@@ -28,6 +28,10 @@ Breakage is already happening:
   2. The MSVC build itself (CMake, NSIS, CI).
   3. `DROP:` limit the simulator plugins built on Windows CI.
   4. `DROP:` this file.
+  5. Fixes found while iterating on CI, listed under Status below.
+  6. `DROP:` notes updates, and the commit that turns the limiter off again.
+- When tidying for review, drop every `DROP:` commit and, if wanted, move
+  the fix commits up next to commit 2. Use a non-interactive rebase.
 
 ## Decisions
 
@@ -40,9 +44,9 @@ Breakage is already happening:
   `yaml_node.h` and `zone.h`. The remaining ones in `helpers.cpp`,
   `logsdialog.cpp`, `simulatorinterface.cpp`, `bluetooth.cpp`,
   `simpgmspace.cpp`, `simufatfs.cpp` and `process_flash.cpp` exist in 2.12
-  too, except `simufatfs.cpp`. 2.12 rewrote that file (#6454), so 2.11's
-  old MSVC path there (`MSVC_BUILD`, `thirdparty/windows/dirent`) is
-  untested.
+  too, except `simufatfs.cpp`. 2.11's old MSVC path in that file couldn't
+  work: `windows.h` and FatFs's `ff.h` define clashing `DWORD`/`WCHAR`. So
+  #6454 (the `std::filesystem` rewrite 2.12 ships) is ported instead.
 - **pthreads: pthreads4w from vcpkg** (`pthreads:x64-windows`, which
   produces `pthreadVC3.dll`, installed next to `companion.exe`). 2.11's
   simulator uses pthreads in `rtos.h`, `simpgmspace.cpp`, `simudisk.cpp` and
@@ -77,29 +81,71 @@ Breakage is already happening:
 - **Upgrades:** the installer deletes the leftover MinGW runtime DLLs
   (`libgcc_s_seh-1`, `libstdc++-6`, `libwinpthread-1`).
 
-## Status (2026-10-07)
+## Status (2026-10-08)
 
-- First cut, not yet built on Windows.
-- The ported radio sources were checked with ARM firmware builds (X7, X9D+,
-  TX16S).
-- Iterating on fork CI with the `DROP:` plugin limiter
-  (`EDGETX_SIMU_PLUGINS` in the workflow). Run it with
-  `gh workflow run companion.yml --repo pfeerick/edgetx --ref pfeerick/2.11-msvc -f target=windows`.
+**Windows CI is green with the plugin limiter on** (x7, x9d, tx16s, nv14),
+in fork run 37704472973. The installer artifact was checked:
+- `companion-windows-2.11.8.exe` is 43.5 MB.
+- It contains release Qt DLLs and no MinGW DLLs. It has `pthreadVC3.dll`,
+  `SDL2.dll`, the OpenSSL 1.1 DLLs, `lib`-prefixed plugins, `rdfu\` with its
+  `vcruntime140.dll`, and `vc_redist.x64.exe` (extracted to `$TEMP` only).
+- The PE headers show an 8 MB stack on `companion.exe`/`simulator.exe`.
+  Imports are `MSVCP140`/`VCRUNTIME140`, Qt, SDL2, and `pthreadVC3`
+  (plugins only).
+
+Fixes found while iterating, each its own commit:
+- The superbuild's `$(MAKE)` targets became `cmake --build`, since Ninja
+  rejected the unescaped `$`. There's no `--parallel`, which would mean an
+  unbounded `-j` with make.
+- `PYTHON_EXECUTABLE` is a native path on Windows outside MSYS, because
+  `cmd.exe` read `C:/...` after a pipe as a switch.
+- `simpgmspace.h`: `sleep()` uses `std::this_thread::sleep_for` under MSVC,
+  since there's no `unistd.h`. `radiolib_native` and `simu_drivers` get
+  `WIN_INCLUDE_DIRS`.
+- `simpgmspace.cpp`: `std::chrono` timer everywhere, as in 2.12. The old
+  MSVC `QueryPerformanceCounter` branch was dropped.
+- **Port of #6454** (simufatfs to `std::filesystem`). Adaptations: the
+  `SIMU_DISKIO` no-op `simuFatfsSetPaths` macro is kept, and the radio
+  tests are left untouched. **This also changes the Linux/macOS simulator.**
+- **Port of #6478** (`extern "C"` Lua ROTables). MSVC mangles C++ variable
+  names. 2.11 has no `colorlib`, so the block starts at `lcdlib`.
+- Signature mismatches, which MSVC catches because it mangles return types:
+  - Taranis `isBacklightEnabled()` now returns `bool`, as in 2.12.
+  - The simu `bluetoothIsWriting()` now returns `uint8_t`.
+  - The simu `gyroInit/gyroRead` now return `int` / `-1`, as in 2.12. The
+    old `void` stubs left `gyro.cpp`'s `< 0` check reading an undefined
+    value.
+  - A scan (simu stub definitions vs header declarations) found no others.
+- `generate_hwdefs_qrc.py` is run through `PYTHON_EXECUTABLE`, since
+  `cmd.exe` can't use its shebang.
+
+Iterate with
+`gh workflow run companion.yml --repo pfeerick/edgetx --ref pfeerick/2.11-msvc -f target=windows`
+(around 15 minutes with the limiter, about 2 hours for all plugins).
+
+## Next
+
+1. Run the full build (limiter off) with `target=all`. Other boards may hit
+   more signature mismatches. Linux and macOS must stay green, because
+   #6454, #6478 and the superbuild change touch shared code.
+2. Get the radio unit tests to run on the PR. #6454 changes the simulator
+   file layer they use.
+3. Windows hardware tests (below), and a simulator smoke test on Linux and
+   macOS (SD card browsing, Lua scripts, model/settings save).
+4. Decide on the order: rdfu PR first, then this one rebased onto 2.11, and
+   whether the mingw64 NSIS breakage needs a separate quick fix for 2.11.9.
 
 ## Known risks / things to check in CI logs
 
-- `SDL2_LIBRARIES` includes `SDL2::SDL2main`. Check Companion still links
-  Qt's WinMain, not SDL's, and that no file including `SDL.h` gets
-  `main` renamed.
-- pthreads4w and `struct timespec`: the UCRT defines it, and pthreads4w
-  should detect that. If the compiler reports a redefinition, add
-  `-DHAVE_STRUCT_TIMESPEC` for `WIN32 AND NOT MINGW`.
+- `SDL2_LIBRARIES` includes `SDL2::SDL2main`. It linked fine, but check
+  at runtime that Companion starts normally.
+- pthreads4w and `struct timespec`: no redefinition reported.
 - **Bitfield layout:** `-mno-ms-bitfields` is MinGW-only, so packed
   bitfield structs get Microsoft's layout. 2.12 works with that, but watch
   for size `static_assert`s, and test the YAML round-trip.
-- The MSVC_BUILD code in `simufatfs.cpp` (see above).
-- The `cmd.exe` pipe in `AddHardwareDefTarget` (`grep | sort` removed, as in
-  #6476).
+- About 125 warnings, mostly the MSVC CRT's "deprecated/insecure" ones
+  (`sprintf` etc). `-D_CRT_SECURE_NO_WARNINGS` for MSVC builds would quiet
+  them.
 
 ## Windows hardware tests (once CI is green)
 
