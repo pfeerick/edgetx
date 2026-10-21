@@ -47,7 +47,6 @@ jobs:
                                 mingw-w64-x86_64-libraqm \
                                 mingw-w64-x86_64-SDL2 \
                                 mingw-w64-x86_64-clang \
-                                mingw-w64-x86_64-nsis \
                                 mingw-w64-x86_64-libusb \
                                 mingw-w64-x86_64-openssl
           python -m pip install clang jinja2
@@ -63,6 +62,12 @@ jobs:
         working-directory: ${{github.workspace}}
         run: |
           pacman -U --noconfirm .github/msys2/mingw-w64-x86_64-dfu-util-0.11-2-any.pkg.tar.zst
+
+      # Official NSIS build rather than the MSYS2 package
+      - name: Install NSIS
+        uses: repolevedavaj/install-nsis@v1
+        with:
+          nsis-version: '3.13'
 
       - name: Install Qt
         uses: jdpurcell/install-qt-action@v5
