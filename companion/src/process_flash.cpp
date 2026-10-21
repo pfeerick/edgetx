@@ -27,6 +27,8 @@
 #include <QProcess>
 #include <QTimer>
 #include <QEventLoop>
+#include <QFileInfo>
+#include <QRegularExpression>
 
 #if defined _MSC_VER || !defined __GNUC__
 #include <Windows.h>
@@ -37,6 +39,11 @@
 #include <unistd.h>
 #endif
 
+bool isRdfuCommand(const QString & cmd)
+{
+  return QFileInfo(cmd).baseName().toLower().startsWith("rdfu");
+}
+
 FlashProcess::FlashProcess(const QString & cmd, const QStringList & args, ProgressWidget * progress):
   progress(progress),
   cmd(cmd),
@@ -46,7 +53,8 @@ FlashProcess::FlashProcess(const QString & cmd, const QStringList & args, Progre
   lfuse(0),
   hfuse(0),
   efuse(0),
-  flashPhase(READING)
+  flashPhase(READING),
+  rdfu(isRdfuCommand(cmd))
 #if !__GNUC__
   , killTimer(nullptr)
 #endif
@@ -97,6 +105,7 @@ void FlashProcess::onStarted()
 #if !__GNUC__
 bool killProcessByName(const char *szProcessToKill)
 {
+  QString processToKill{szProcessToKill};
   HANDLE hProcessSnap;
   HANDLE hProcess;
   PROCESSENTRY32 pe32;
@@ -115,7 +124,9 @@ bool killProcessByName(const char *szProcessToKill)
   }
 
   do {
-    if (!strcmp(pe32.szExeFile,szProcessToKill)) {    //  checks if process at current position has the name of to be killed app
+    QString exeFile{pe32.szExeFile};
+  
+    if (exeFile == processToKill) {    //  checks if process at current position has the name of to be killed app
       hProcess = OpenProcess(PROCESS_TERMINATE,0, pe32.th32ProcessID);  // gets handle to process
       TerminateProcess(hProcess, 0);   // Terminate process by handle
       CloseHandle(hProcess);  // close the handle
@@ -185,6 +196,38 @@ void FlashProcess::analyseStandardOutput(const QString & text)
     }
   }
 
+  if (rdfu) {
+    // rdfu redraws its progress line with '\r', e.g.
+    //   "  Erasing page  3 of 12 @ 0x08004000"
+    //   "  Flashing  45% [###...   ]"
+    //   "  Reading  45% [###...   ]"
+    // Only parse up to the last '\r' or '\n', a redraw can be split across reads.
+    static const QRegularExpression rdfuProgress("(Erasing page|Flashing|Reading)\\s+(\\d+)(?:%| of\\s+(\\d+))");
+    rdfuProgressLine.append(text);
+    int end = qMax(rdfuProgressLine.lastIndexOf('\r'), rdfuProgressLine.lastIndexOf('\n'));
+    QRegularExpressionMatch last;
+    if (end >= 0) {
+      QRegularExpressionMatchIterator it = rdfuProgress.globalMatch(rdfuProgressLine.left(end));
+      while (it.hasNext())
+        last = it.next();
+      rdfuProgressLine = rdfuProgressLine.mid(end + 1);
+    }
+    if (last.hasMatch()) {
+      int value = last.captured(2).toInt();
+      if (last.captured(1) == "Reading") {
+        progress->setInfo(tr("Reading..."));
+      }
+      else {
+        progress->setInfo(tr("Writing..."));
+        if (last.captured(1) == "Erasing page") {
+          int pages = last.captured(3).toInt();
+          value = pages > 0 ? value * 100 / pages : 0;
+        }
+      }
+      progress->setValue(value);
+    }
+  }
+
   if (text.contains(":010000")) {
     // contains fuse info
     QStringList stl = text.split(":01000000");
@@ -233,7 +276,8 @@ void FlashProcess::analyseStandardError(const QString &text)
   }
 
   if ((text.contains("-E-") && !text.contains("-E- No receive file name")) ||
-       text.contains("No DFU capable USB device found")) {
+       text.contains("No DFU capable USB device found") ||
+       (rdfu && text.contains("Error: "))) {
     hasErrors = true;
   }
 }
@@ -297,7 +341,8 @@ void FlashProcess::errorWizard()
       QMessageBox::warning(nullptr, "Companion - Tip of the day", tr("Your radio uses a %1 CPU!!!\n\nPlease select an appropriate firmware type to program it.").arg(DeviceStr)+FwStr+tr("\nYou are currently using:\n %1").arg(firmware->getName()));
     }
   }
-  else if (output.contains("No DFU capable USB device found")){
+  else if (output.contains("No DFU capable USB device found") ||
+           (rdfu && output.contains("Error: No DFU device"))) {
     QMessageBox::warning(nullptr, "Companion - Tip of the day", tr("Your radio does not seem connected to USB or the driver is not initialized!!!."));
   }
 }

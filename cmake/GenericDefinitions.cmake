@@ -53,6 +53,11 @@ find_package(PythonInterp 3 REQUIRED)
 if(PYTHONINTERP_FOUND)
   message(STATUS "Python found, version: ${PYTHON_VERSION_STRING}")
   get_filename_component(PYTHON_DIRECTORY ${PYTHON_EXECUTABLE} DIRECTORY)
+  if(CMAKE_HOST_WIN32 AND NOT CMAKE_GENERATOR MATCHES "MSYS|MinGW")
+    # Custom commands run under cmd.exe, which reads the '/' in "C:/..." as a
+    # switch when python isn't the first command of a pipe
+    file(TO_NATIVE_PATH "${PYTHON_EXECUTABLE}" PYTHON_EXECUTABLE)
+  endif()
 else()
   message(WARNING "Python not found! Most firmware and simu flavors not buildable.")
   set(LUA NO)

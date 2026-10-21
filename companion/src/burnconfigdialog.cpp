@@ -77,8 +77,10 @@ void burnConfigDialog::getSettings()
 #if defined WIN32 || !defined __GNUC__
     if ( sambaLoc.isEmpty())
       sambaLoc = QFileInfo("sam-ba.exe").absoluteFilePath();
-    if ( dfuLoc.isEmpty())
-      dfuLoc =  QFileInfo("dfu-util.exe").absoluteFilePath();
+    // rdfu replaced the bundled dfu-util, whose saved path is gone after an
+    // upgrade, so a missing tool also falls back to the bundled rdfu
+    if (dfuLoc.isEmpty() || !QFileInfo::exists(dfuLoc))
+      dfuLoc = QFileInfo(QCoreApplication::applicationDirPath() + "/rdfu/rdfu.exe").absoluteFilePath();
 #elif defined __APPLE__
     if ( sambaLoc.isEmpty())
       sambaLoc = "/usr/local/bin/sam-ba";

@@ -70,6 +70,10 @@ get_property(SIMU_SRC_OPTIONS
 target_compile_options(simu_drivers PRIVATE ${SIMU_SRC_OPTIONS})
 
 set_property(TARGET simu_drivers PROPERTY POSITION_INDEPENDENT_CODE ON)
+if(WIN32)
+  # dirent, and pthreads4w for MSVC builds
+  target_include_directories(simu_drivers SYSTEM PRIVATE ${WIN_INCLUDE_DIRS})
+endif()
 
 if(SIMU_AUX)
   target_compile_definitions(simu_drivers PRIVATE -DSIMU_COM_PORT=${SIMU_COM_PORT})
@@ -98,10 +102,11 @@ if(Qt5Widgets_FOUND)
     )
   list(APPEND SIMULATOR_SRC ${SIMU_SRC} opentxsimulator.cpp)
   add_library(${SIMULATOR_TARGET} SHARED ${SIMULATOR_SRC})
+  set_target_properties(${SIMULATOR_TARGET} PROPERTIES PREFIX "lib")
 
   target_compile_options(${SIMULATOR_TARGET} PRIVATE ${SIMU_SRC_OPTIONS})
   target_compile_definitions(${SIMULATOR_TARGET} PUBLIC ${APP_COMMON_DEFINES})
-  target_link_libraries(${SIMULATOR_TARGET} ${SDL2_LIBRARIES} Qt5::Core Qt5::SerialPort)
+  target_link_libraries(${SIMULATOR_TARGET} PRIVATE ${SDL2_LIBRARIES} Qt5::Core Qt5::SerialPort)
 
   # Remove debug symbols on release builds
   if(NOT CLANG)

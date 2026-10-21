@@ -21,8 +21,15 @@
 
 #pragma once
 
-#include <unistd.h>
-#define sleep(x) usleep(1000*x)
+#if defined(_MSC_VER)
+  // no unistd.h with MSVC
+  #include <chrono>
+  #include <thread>
+  #define sleep(x) std::this_thread::sleep_for(std::chrono::milliseconds(x))
+#else
+  #include <unistd.h>
+  #define sleep(x) usleep(1000*x)
+#endif
 
 #include <assert.h>
 #include <inttypes.h>
@@ -34,6 +41,8 @@
 // #undef max
 
 extern uint8_t * eeprom;
+
+#include <string>
 
 #define __disable_irq()
 #define __enable_irq()
@@ -81,6 +90,9 @@ void simuMain();
 #else
   #define simuFatfsSetPaths(...)
 #endif
+
+std::string simuFatfsGetCurrentPath();
+std::string simuFatfsGetRealPath(const std::string &p);
 
 #if defined(TRACE_SIMPGMSPACE)
   #undef TRACE_SIMPGMSPACE
