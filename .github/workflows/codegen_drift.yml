@@ -53,7 +53,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JUST_VERSION: '1.57.0'
+  JUST_VERSION: '1.59.0'
 
 jobs:
   changes:
