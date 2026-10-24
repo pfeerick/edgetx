@@ -31,6 +31,18 @@ if [[ $(lsb_release -rs) != "24.04" ]]; then
   exit 1
 fi
 
+# Qt and the Arm toolchain publish separate x86_64 and arm64 Linux builds
+case "$(uname -m)" in
+  x86_64)
+    HOST_ARCH="x86_64"; QT_HOST="linux"; QT_ARCH="linux_gcc_64"; QT_DIR="gcc_64" ;;
+  aarch64)
+    HOST_ARCH="aarch64"; QT_HOST="linux_arm64"; QT_ARCH="linux_gcc_arm64"; QT_DIR="gcc_arm64" ;;
+  *)
+    echo "ERROR: Unsupported architecture $(uname -m)!"
+    echo "Terminating the script now."
+    exit 1 ;;
+esac
+
 echo "=== Step $((STEP++)): Setting up package repositories. Please provide sudo credentials, when asked ==="
 # Refresh in case package lists are stale
 sudo apt-get -y update
@@ -129,28 +141,28 @@ fi
 echo "=== Step $((STEP++)): Installing Qt ==="
 sudo mkdir -p /opt/qt
 sudo chown "${USER}:${USER}" /opt/qt
-aqt install-qt --outputdir /opt/qt linux desktop ${QT_VERSION} linux_gcc_64 -m qtmultimedia qtserialport
+aqt install-qt --outputdir /opt/qt ${QT_HOST} desktop ${QT_VERSION} ${QT_ARCH} -m qtmultimedia qtserialport
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please press Enter to continue or Ctrl+C to stop."
   read
 fi
 
 echo "=== Step $((STEP++)): Fetching GNU Arm Embedded Toolchains ==="
-wget -q --show-progress --progress=bar:force:noscroll https://developer.arm.com/-/media/Files/downloads/gnu/${GCC_ARM_VERSION}/binrel/arm-gnu-toolchain-${GCC_ARM_VERSION}-x86_64-arm-none-eabi.tar.xz
+wget -q --show-progress --progress=bar:force:noscroll https://developer.arm.com/-/media/Files/downloads/gnu/${GCC_ARM_VERSION}/binrel/arm-gnu-toolchain-${GCC_ARM_VERSION}-${HOST_ARCH}-arm-none-eabi.tar.xz
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please press Enter to continue or Ctrl+C to stop."
   read
 fi
 
 echo "=== Step $((STEP++)): Unpacking GNU Arm Embedded Toolchains ==="
-pv arm-gnu-toolchain-${GCC_ARM_VERSION}-x86_64-arm-none-eabi.tar.xz | tar xJf -
+pv arm-gnu-toolchain-${GCC_ARM_VERSION}-${HOST_ARCH}-arm-none-eabi.tar.xz | tar xJf -
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please press Enter to continue or Ctrl+C to stop."
   read
 fi
 
 echo "=== Step $((STEP++)): Removing the downloaded archives ==="
-rm arm-gnu-toolchain-${GCC_ARM_VERSION}-x86_64-arm-none-eabi.tar.xz
+rm arm-gnu-toolchain-${GCC_ARM_VERSION}-${HOST_ARCH}-arm-none-eabi.tar.xz
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please press Enter to continue or Ctrl+C to stop."
   read
@@ -159,7 +171,7 @@ fi
 echo "=== Step $((STEP++)): Moving GNU Arm Embedded Toolchains to /opt ==="
 # Remove first: mv into an existing directory nests instead of replacing
 sudo rm -rf /opt/gcc-arm-none-eabi
-sudo mv arm-gnu-toolchain-${GCC_ARM_VERSION}-x86_64-arm-none-eabi /opt/gcc-arm-none-eabi
+sudo mv arm-gnu-toolchain-${GCC_ARM_VERSION}-${HOST_ARCH}-arm-none-eabi /opt/gcc-arm-none-eabi
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please press Enter to continue or Ctrl+C to stop."
   read
@@ -169,7 +181,7 @@ echo "=== Step $((STEP++)): Adding GNU Arm Embedded Toolchain and Qt to PATH of 
 # Only append if missing, so re-runs do not duplicate
 touch ~/.bashrc
 GCC_PATH_LINE="export PATH=\"/opt/gcc-arm-none-eabi/bin:\$PATH\""
-QT_PATH_LINE="export PATH=\"/opt/qt/${QT_VERSION}/gcc_64/bin:\$PATH\""
+QT_PATH_LINE="export PATH=\"/opt/qt/${QT_VERSION}/${QT_DIR}/bin:\$PATH\""
 grep -qxF "${GCC_PATH_LINE}" ~/.bashrc || echo "${GCC_PATH_LINE}" >> ~/.bashrc
 grep -qxF "${QT_PATH_LINE}" ~/.bashrc || echo "${QT_PATH_LINE}" >> ~/.bashrc
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then

@@ -31,6 +31,14 @@ if [[ $(lsb_release -rs) != "22.04" ]]; then
   exit 1
 fi
 
+# The official Qt arm64 Linux binaries need glibc 2.38 (Ubuntu 24.04)
+if [[ $(uname -m) != "x86_64" ]]; then
+  echo "ERROR: Only x86_64 is supported on Ubuntu 22.04!"
+  echo "On arm64, use Ubuntu 24.04 (setup_buildenv_ubuntu24.04.sh) or the ghcr.io/edgetx/edgetx-dev container."
+  echo "Terminating the script now."
+  exit 1
+fi
+
 echo "=== Step $((STEP++)): Setting up package repositories. Please provide sudo credentials, when asked ==="
 # Refresh in case package lists are stale
 sudo apt-get -y update
