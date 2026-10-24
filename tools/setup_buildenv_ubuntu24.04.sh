@@ -75,6 +75,7 @@ sudo apt-get -y install --no-install-recommends \
     python3-setuptools \
     python3-tk \
     libcups2 \
+    libxcb-cursor0 \
     libssl-dev \
     libgtest-dev \
     clang \
