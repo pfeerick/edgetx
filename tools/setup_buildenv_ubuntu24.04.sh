@@ -7,6 +7,7 @@ set -e
 
 QT_VERSION="6.9.3"
 GCC_ARM_VERSION="14.2.rel1"
+JUST_VERSION="1.59.0"
 
 PAUSEAFTEREACHLINE="false"
 STEP=1
@@ -105,6 +106,15 @@ fi
 
 echo "=== Step $((STEP++)): Installing lv_font_conv ==="
 sudo npm i lv_font_conv -g
+if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
+  echo "Step finished. Please check the output above and press Enter to continue or Ctrl+C to stop."
+  read
+fi
+
+echo "=== Step $((STEP++)): Installing just ==="
+# Runs the Justfile codegen recipes (same version as the edgetx-dev image)
+wget -qO- https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${HOST_ARCH}-unknown-linux-musl.tar.gz | \
+    sudo tar -xz -C /usr/local/bin just
 if [[ $PAUSEAFTEREACHLINE == "true" ]]; then
   echo "Step finished. Please check the output above and press Enter to continue or Ctrl+C to stop."
   read
