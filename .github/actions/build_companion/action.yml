@@ -11,7 +11,7 @@ inputs:
     required: runner.os != 'Linux'
   sdl2-version:
     description: 'Upstream SDL2 version (Windows only)'
-    default: '2.32.8'
+    default: '2.32.10'
   sdl3-version:
     description: 'SDL3 version built from source for macOS'
     default: '3.4.14'
