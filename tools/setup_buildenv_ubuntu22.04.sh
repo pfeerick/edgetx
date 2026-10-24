@@ -89,6 +89,11 @@ sudo apt-get -y install --no-install-recommends \
     python3-tk \
     libcups2 \
     libxcb-cursor0 \
+    libxcb-icccm4 \
+    libxcb-keysyms1 \
+    libxcb-shape0 \
+    libxcb-xkb1 \
+    libxkbcommon-x11-0 \
     libssl-dev \
     libgtest-dev \
     clang \
