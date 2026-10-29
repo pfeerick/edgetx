@@ -569,10 +569,6 @@ void perMain()
 
   handleUsbConnection();
 
-#if defined(SHARED_DSC_HEADPHONE_JACK)
-  handleJackConnection();
-#endif
-
   checkTrainerSettings();
   periodicTick();
   DEBUG_TIMER_STOP(debugTimerPerMain1);
