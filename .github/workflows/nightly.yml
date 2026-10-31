@@ -26,7 +26,7 @@ jobs:
           - boxer;gx12;gx15;mt12;pocket;tx12mk2;tx15;tx16s;tx16smk3;zorro # RadioMaster
           - h17 # Senduwing
     container:
-      image: ghcr.io/edgetx/edgetx-dev:latest
+      image: ghcr.io/edgetx/edgetx-dev:pr-42
       volumes:
         - ${{ github.workspace }}:/src
     steps:
