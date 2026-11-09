@@ -230,6 +230,8 @@ class ScriptLineButton : public ListLineButton
       // TODO: runtimeData->instructions has no value
       switch (runtimeData->state) {
         case SCRIPT_SYNTAX_ERROR:
+        case SCRIPT_RUNTIME_ERROR:
+        case SCRIPT_PANIC:
           lv_label_set_text(lbl, STR_SCRIPT_ERROR);
           break;
         case SCRIPT_NOFILE:

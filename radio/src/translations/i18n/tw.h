@@ -837,6 +837,7 @@
 #define TR_NO_BITMAPS_ON_SD            "存儲卡中無圖片"
 #define TR_NO_SCRIPTS_ON_SD            "存儲卡中無腳本"
 #define TR_SCRIPT_SYNTAX_ERROR         "腳本程序語法錯誤"
+#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
 #define TR_SCRIPT_PANIC                "腳本異常"
 #define TR_SCRIPT_ERROR                "未知錯誤"
 #define TR_PLAY_FILE                   "播放"

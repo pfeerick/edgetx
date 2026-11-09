@@ -875,6 +875,7 @@
 #define STR_SCRIPT_ERROR currentLangStrings->STR_SCRIPT_ERROR
 #define STR_SCRIPT_PANIC currentLangStrings->STR_SCRIPT_PANIC
 #define STR_SCRIPT_SYNTAX_ERROR currentLangStrings->STR_SCRIPT_SYNTAX_ERROR
+#define STR_SCRIPT_RUNTIME_ERROR currentLangStrings->STR_SCRIPT_RUNTIME_ERROR
 #define STR_SCRIPT currentLangStrings->STR_SCRIPT
 #define STR_SD_CARD currentLangStrings->STR_SD_CARD
 #define STR_SD_INFO_TITLE currentLangStrings->STR_SD_INFO_TITLE

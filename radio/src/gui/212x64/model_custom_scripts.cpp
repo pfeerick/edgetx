@@ -150,6 +150,8 @@ void menuModelCustomScripts(event_t event)
       lcdDrawSizedText(5*FW, y, sd.file, sizeof(sd.file), 0);
       switch (scriptInternalData[scriptIndex].state) {
         case SCRIPT_SYNTAX_ERROR:
+        case SCRIPT_RUNTIME_ERROR:
+        case SCRIPT_PANIC:
           lcdDrawText(30*FW+2, y, "(error)");
           break;
         default:

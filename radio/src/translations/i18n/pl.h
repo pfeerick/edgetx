@@ -833,6 +833,7 @@
 #define TR_NO_BITMAPS_ON_SD    "Brak obrazków na SD"
 #define TR_NO_SCRIPTS_ON_SD    "Brak skryptów na SD"
 #define TR_SCRIPT_SYNTAX_ERROR TR("Błąd składni", "Skrypt:błąd składni")
+#define TR_SCRIPT_RUNTIME_ERROR "Script error"
 #define TR_SCRIPT_PANIC        "Skrypt:panic"
 #define TR_SCRIPT_ERROR        "Nieznany błąd"
 #define TR_PLAY_FILE           "Odtwórz"

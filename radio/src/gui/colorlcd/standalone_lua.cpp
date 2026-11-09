@@ -357,7 +357,7 @@ void StandaloneLuaWindow::luaShowError()
   runFunction = LUA_REFNIL;
   hasError = true;
   extern void luaError(lua_State *L, uint8_t error);
-  luaError(lsStandalone, SCRIPT_SYNTAX_ERROR);
+  luaError(lsStandalone, SCRIPT_RUNTIME_ERROR);
 }
 
 void StandaloneLuaWindow::showError(bool firstCall, const char* title, const char* msg)

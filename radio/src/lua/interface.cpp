@@ -751,6 +751,9 @@ void displayLuaError(bool firstCall = false)
     case SCRIPT_PANIC:
       title = STR_SCRIPT_PANIC;
       break;
+    case SCRIPT_RUNTIME_ERROR:
+      title = STR_SCRIPT_RUNTIME_ERROR;
+      break;
     case SCRIPT_NOFILE:
       title = STR_NEEDS_FILE;
       break;
@@ -785,6 +788,12 @@ void displayLuaError(bool firstCall = false)
     str = split;
   }
 #endif
+}
+
+// Map the status of a failed lua_resume/lua_pcall to a script state
+static uint8_t luaRuntimeErrorState(int luaStatus)
+{
+  return (luaStatus == LUA_ERRMEM) ? SCRIPT_PANIC : SCRIPT_RUNTIME_ERROR;
 }
 
 void luaError(lua_State * L, uint8_t error)
@@ -1003,8 +1012,8 @@ static void luaLoadScripts(bool init, const char * filename = nullptr)
         }
       }
       else {
-        // Error
-        sid.state = SCRIPT_SYNTAX_ERROR;
+        // Error while running the chunk or init()
+        sid.state = luaRuntimeErrorState(luaStatus);
         initFunction = LUA_REFNIL;
       }
     } while(initFunction != LUA_REFNIL);  
@@ -1186,7 +1195,7 @@ static bool resumeLua(bool init, bool allowLcdUsage)
 
         for (int j = sio -> outputsCount - 1; j >= 0; j--) {
           if (!lua_isnumber(lsScripts, -1)) {
-            sid.state = SCRIPT_SYNTAX_ERROR;
+            sid.state = SCRIPT_RUNTIME_ERROR;
             snprintf(lua_warning_info, LUA_WARNING_INFO_LEN, "Script %.*s: run function did not return a number\n", LEN_SCRIPT_FILENAME, getScriptName(idx));
             luaError(lsScripts, sid.state);
             break;
@@ -1225,7 +1234,7 @@ static bool resumeLua(bool init, bool allowLcdUsage)
           return scriptWasRun;
         }
         else {
-          sid.state = SCRIPT_SYNTAX_ERROR;
+          sid.state = SCRIPT_RUNTIME_ERROR;
           snprintf(lua_warning_info, LUA_WARNING_INFO_LEN, "Script run function returned unexpected value\n");
           luaError(lsScripts, sid.state);
         }
@@ -1251,7 +1260,7 @@ static bool resumeLua(bool init, bool allowLcdUsage)
     }
     else {
       // Error
-      sid.state = SCRIPT_SYNTAX_ERROR;
+      sid.state = luaRuntimeErrorState(luaStatus);
       luaError(lsScripts, sid.state);
 
       // Replace the dead coroutine with a new one

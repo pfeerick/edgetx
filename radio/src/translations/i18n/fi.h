@@ -834,6 +834,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Ei bittikarttoja SD:llä"
 #define TR_NO_SCRIPTS_ON_SD            "Ei skriptejä SD:llä"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Syntax error", "Script syntax error")
+#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
 #define TR_SCRIPT_PANIC                "Skriptipaniikki"
 #define TR_SCRIPT_ERROR                "Tuntematon virhe"
 #define TR_PLAY_FILE                   "Toista"

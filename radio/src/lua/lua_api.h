@@ -118,7 +118,8 @@ enum ScriptState {
   SCRIPT_OK,
   SCRIPT_NOFILE,
   SCRIPT_SYNTAX_ERROR,
-  SCRIPT_PANIC
+  SCRIPT_PANIC,
+  SCRIPT_RUNTIME_ERROR
 };
 
 enum ScriptReference {

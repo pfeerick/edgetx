@@ -839,6 +839,7 @@
 #define TR_NO_BITMAPS_ON_SD             "Inga ikoner på SD"
 #define TR_NO_SCRIPTS_ON_SD             "Inga skript på SD"
 #define TR_SCRIPT_SYNTAX_ERROR          TR("Syntaxfel", "Skriptsyntaxfel")
+#define TR_SCRIPT_RUNTIME_ERROR         "Script error"
 #define TR_SCRIPT_PANIC                 "Script panic"
 #define TR_SCRIPT_ERROR                 "Okänt fel"
 #define TR_PLAY_FILE                    "Spela"
