@@ -842,7 +842,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Нет изобр на SD карте"
 #define TR_NO_SCRIPTS_ON_SD            "Нет скриптов на SD карте"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Синтак ошибка", "Синтак ошибка")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "Ошибка скрипта"
 #define TR_SCRIPT_PANIC                "Аварийное заверш сценария"
 #define TR_SCRIPT_ERROR                "Неизвестная ошибка"
 #define TR_PLAY_FILE                   "ВСПР"

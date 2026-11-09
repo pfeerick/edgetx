@@ -843,7 +843,7 @@
 #define TR_NO_BITMAPS_ON_SD            "אין תמונות בכרטיס"
 #define TR_NO_SCRIPTS_ON_SD            "אין סקריפט בכרטיס"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("שגיאת תחביר", "שגיאת תחביר בסקריפט")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "שגיאת סקריפט"
 #define TR_SCRIPT_PANIC                "קריסת סקריפט"
 #define TR_SCRIPT_ERROR                "תקלה לא ידועה"
 #define TR_PLAY_FILE                   "נגן"

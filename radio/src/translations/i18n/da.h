@@ -845,7 +845,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Ingen bitmapper på SD"
 #define TR_NO_SCRIPTS_ON_SD            "Ingen scripts på SD"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Syntax fejl", "Script syntax fejl")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "Script fejl"
 #define TR_SCRIPT_PANIC                "Script panik"
 #define TR_SCRIPT_ERROR                "Ukendt fejl"
 #define TR_PLAY_FILE                   "Spil"

@@ -875,7 +875,7 @@
 #define TR_NO_BITMAPS_ON_SD               "SD 카드에 비트맵 없음"
 #define TR_NO_SCRIPTS_ON_SD               "SD 카드에 스크립트 없음"
 #define TR_SCRIPT_SYNTAX_ERROR            TR("문법 오류", "스크립트 문법 오류")
-#define TR_SCRIPT_RUNTIME_ERROR           "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR           "스크립트 오류"
 #define TR_SCRIPT_PANIC                   "스크립트 중단됨"
 #define TR_SCRIPT_ERROR                   "알 수 없는 오류"
 #define TR_PLAY_FILE                      "재생"

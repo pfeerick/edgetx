@@ -839,7 +839,7 @@
 #define TR_NO_BITMAPS_ON_SD            "SDカード内に画像データがありません"
 #define TR_NO_SCRIPTS_ON_SD            "SDカード内にスクリプトがありません"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Syntax error", "スクリプト構文エラー")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "スクリプトエラー"
 #define TR_SCRIPT_PANIC                "スクリプトパニック"
 #define TR_SCRIPT_ERROR                "不明のエラー"
 #define TR_PLAY_FILE                   "プレイ"

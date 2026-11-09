@@ -838,7 +838,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Aucun Bitmap SD"
 #define TR_NO_SCRIPTS_ON_SD            "Aucun Script SD"
 #define TR_SCRIPT_SYNTAX_ERROR          TR("Erreur syntaxe", "Erreur syntaxe script")
-#define TR_SCRIPT_RUNTIME_ERROR         "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR         "Erreur script"
 #define TR_SCRIPT_PANIC                "Script bloqué"
 #define TR_SCRIPT_ERROR                "Erreur inconnue"
 #define TR_PLAY_FILE                   "Lire"

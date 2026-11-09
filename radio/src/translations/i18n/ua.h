@@ -841,7 +841,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Немає бітмапів на SD"
 #define TR_NO_SCRIPTS_ON_SD            "Немає скриптів на SD"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Синтакс. пом.", "Синтаксична помилка")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "Помилка скрипту"
 #define TR_SCRIPT_PANIC                "Скрипт панікує"
 #define TR_SCRIPT_ERROR                "Невідома помилка"
 #define TR_PLAY_FILE                   "Грати"

@@ -843,7 +843,7 @@
 #define TR_NO_BITMAPS_ON_SD            "Žiadne obrázky na SD"
 #define TR_NO_SCRIPTS_ON_SD            "Žiadny skript na SD"
 #define TR_SCRIPT_SYNTAX_ERROR         TR("Syntaktická chyba", "Syntaktická chyba skriptu")
-#define TR_SCRIPT_RUNTIME_ERROR        "Script error"
+#define TR_SCRIPT_RUNTIME_ERROR        "Chyba skriptu"
 #define TR_SCRIPT_PANIC                "Skript panika"
 #define TR_SCRIPT_ERROR                "Neznáma chyba"
 #define TR_PLAY_FILE                   "Prehrať"
