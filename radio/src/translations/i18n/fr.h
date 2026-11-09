@@ -804,7 +804,7 @@
 #define TR_REFRESH                     "Refresh"
 #define TR_SDCARD_FULL                 "SD carte pleine"
 #define TR_SDCARD_FULL_EXT              TR_BW_COL(TR_SDCARD_FULL "\036Journaux et" LCDW_128_LINEBREAK "Impr. écran désactivé", TR_SDCARD_FULL "\nJournaux et Impr. écran désactivé")
-#define TR_NEEDS_FILE                  "FICHIER EXIGE"
+#define TR_NEEDS_FILE                  "Fichier exigé"
 #define TR_EXT_MULTI_SPEC              "opentx-inv"
 #define TR_INT_MULTI_SPEC              "stm-opentx-noinv"
 #define TR_INCOMPATIBLE                "Incompatible"

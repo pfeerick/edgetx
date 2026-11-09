@@ -811,7 +811,7 @@
 #define TR_REFRESH                     "Refresh"
 #define TR_SDCARD_FULL                 "SD kort fuldt"
 #define   TR_SDCARD_FULL_EXT            TR_BW_COL(TR_SDCARD_FULL "\036Log & skærmklip" LCDW_128_LINEBREAK "deaktiveret", TR_SDCARD_FULL "\nLog & skærmklip deaktiveret")
-#define TR_NEEDS_FILE                  "MANGLER FIL"
+#define TR_NEEDS_FILE                  "Mangler fil"
 #define TR_EXT_MULTI_SPEC              "opentx-inv"
 #define TR_INT_MULTI_SPEC              "stm-opentx-noinv"
 #define TR_INCOMPATIBLE                "Inkompatibel"

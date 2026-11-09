@@ -805,7 +805,7 @@
 #define TR_REFRESH                     "Refresh"
 #define TR_SDCARD_FULL                 "Cart SD cheio"
 #define TR_SDCARD_FULL_EXT              TR_BW_COL(TR_SDCARD_FULL "\036Logs e captura" LCDW_128_LINEBREAK "de tela desativados", TR_SDCARD_FULL "\nLogs e captura de tela desativados")
-#define TR_NEEDS_FILE                  "NEEDS FILE"
+#define TR_NEEDS_FILE                  "Needs file"
 #define TR_EXT_MULTI_SPEC              "opentx-inv"
 #define TR_INT_MULTI_SPEC              "stm-opentx-noinv"
 #define TR_INCOMPATIBLE                "Incompativel"

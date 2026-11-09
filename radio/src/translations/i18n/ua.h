@@ -807,7 +807,7 @@
 #define TR_REFRESH                     "Refresh"
 #define TR_SDCARD_FULL                 "SD карта повна"
 #define TR_SDCARD_FULL_EXT              TR_BW_COL(TR_SDCARD_FULL "\036Логи і скріншоти" LCDW_128_LINEBREAK "вимкнені", TR_SDCARD_FULL "\nЛоги і скріншоти вимкнені")
-#define TR_NEEDS_FILE                  "ПОТРІБЕН ФАЙЛ"
+#define TR_NEEDS_FILE                  "Потрібен файл"
 #define TR_EXT_MULTI_SPEC              "opentx-inv"				/*need to be clarified by context*/
 #define TR_INT_MULTI_SPEC              "stm-opentx-noinv"				/*need to be clarified by context*/
 #define TR_INCOMPATIBLE                "Несумісне"

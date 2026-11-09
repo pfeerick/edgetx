@@ -800,7 +800,7 @@
 #define TR_REFRESH                     "Refresh"
 #define TR_SDCARD_FULL                 "SD Card llena"
 #define TR_SDCARD_FULL_EXT              TR_BW_COL(TR_SDCARD_FULL "\036Logs and " LCDW_128_LINEBREAK "Screenshots disabled", TR_SDCARD_FULL "\nLogs and Screenshots disabled")
-#define TR_NEEDS_FILE                  "NECESITA ARCHIVO"
+#define TR_NEEDS_FILE                  "Necesita archivo"
 #define TR_EXT_MULTI_SPEC              "opentx-inv"
 #define TR_INT_MULTI_SPEC              "stm-opentx-noinv"
 #define TR_INCOMPATIBLE        "Incompatible"
