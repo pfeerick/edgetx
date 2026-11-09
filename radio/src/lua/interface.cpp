@@ -911,6 +911,7 @@ static void luaLoadScripts(bool init, const char * filename = nullptr)
       if (ref <= SCRIPT_MIX_LAST) {
         if (luaLoadMixScript(ref)) {
           luaError(lsScripts, scriptInternalData[luaScriptsCount - 1].state);
+          lua_settop(lsScripts, 0);  // drop the error message
           continue; // If error then skip the rest of the loop
         }
       } else
@@ -918,6 +919,7 @@ static void luaLoadScripts(bool init, const char * filename = nullptr)
       if (ref <= SCRIPT_GFUNC_LAST) {
         if (luaLoadFunctionScript(ref)) {
           luaError(lsScripts, scriptInternalData[luaScriptsCount - 1].state);
+          lua_settop(lsScripts, 0);  // drop the error message
           continue;
         }
       }
@@ -925,6 +927,7 @@ static void luaLoadScripts(bool init, const char * filename = nullptr)
       else if (ref <= SCRIPT_TELEMETRY_LAST) {
         if (luaLoadTelemetryScript(ref)) {
           luaError(lsScripts, scriptInternalData[luaScriptsCount - 1].state);
+          lua_settop(lsScripts, 0);  // drop the error message
           continue;
         }
       }
@@ -936,6 +939,7 @@ static void luaLoadScripts(bool init, const char * filename = nullptr)
         sid.reference = SCRIPT_STANDALONE;
         if (luaLoad(filename, sid)) {
           luaError(lsScripts, sid.state);
+          lua_settop(lsScripts, 0);  // drop the error message
           break;
         }
       }
