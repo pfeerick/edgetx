@@ -38,6 +38,7 @@ class StandaloneLuaWindow : public Window, public LuaScriptManager
 public:
   static StandaloneLuaWindow* instance();
   static void setup(bool useLvgl, int initFn, int runFn);
+  static void showLoadError(uint8_t state);
 
 #if defined(DEBUG_WINDOWS)
   std::string getName() const override { return "StandaloneLuaWindow"; }

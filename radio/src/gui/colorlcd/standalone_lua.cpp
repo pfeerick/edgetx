@@ -52,6 +52,8 @@ static void luaStandaloneHook(lua_State * L, lua_Debug *ar)
 }
 #endif // #if defined(LUA_ALLOCATOR_TRACER)
 
+extern void luaError(lua_State *L, uint8_t error);
+
 static void luaStandaloneInit()
 {
 #if defined(USE_CUSTOM_ALLOCATOR)
@@ -88,8 +90,21 @@ void luaExecStandalone(const char * filename)
     luaStandaloneInit();
 
   PROTECT_LUA() {
-    if (luaLoadScriptFileToState(lsStandalone, filename, LUA_SCRIPT_LOAD_MODE) == SCRIPT_OK) {
-      if (lua_pcall(lsStandalone, 0, 1, 0) == LUA_OK && lua_istable(lsStandalone, -1)) {
+    int loadState = luaLoadScriptFileToState(lsStandalone, filename, LUA_SCRIPT_LOAD_MODE);
+    if (loadState != SCRIPT_OK) {
+      // File could not be loaded (missing, syntax error, out of memory)
+      if (!lua_isstring(lsStandalone, -1))
+        lua_pushstring(lsStandalone, filename);
+      StandaloneLuaWindow::showLoadError(loadState);
+    } else {
+      int status = lua_pcall(lsStandalone, 0, 1, 0);
+      if (status != LUA_OK) {
+        // Error while running the script chunk
+        StandaloneLuaWindow::showLoadError(status == LUA_ERRMEM ? SCRIPT_PANIC : SCRIPT_RUNTIME_ERROR);
+      } else if (!lua_istable(lsStandalone, -1)) {
+        lua_pushfstring(lsStandalone, "%s: The script did not return a table", filename);
+        StandaloneLuaWindow::showLoadError(SCRIPT_SYNTAX_ERROR);
+      } else {
         int initFunction = LUA_REFNIL, runFunction = LUA_REFNIL;
         bool lvglLayout = false;
 
@@ -107,9 +122,6 @@ void luaExecStandalone(const char * filename)
         }
 
         StandaloneLuaWindow::setup(lvglLayout, initFunction, runFunction);
-      }
-      else {
-        TRACE("luaLoadFile(%s): Error parsing script: %s", filename, lua_tostring(lsStandalone, -1));
       }
     }
   }
@@ -209,6 +221,17 @@ void StandaloneLuaWindow::setup(bool useLvgl, int initFn, int runFn)
 {
   if (_instance == nullptr)
     _instance = new StandaloneLuaWindow(useLvgl, initFn, runFn);
+}
+
+// Open the script window only to report an error that stopped the script
+// from starting. The error message must be on the top of the Lua stack.
+void StandaloneLuaWindow::showLoadError(uint8_t state)
+{
+  if (_instance == nullptr)
+    _instance = new StandaloneLuaWindow(true, LUA_REFNIL, LUA_REFNIL);
+  // Remove the "Loading" label
+  lv_obj_clean(_instance->lvobj);
+  luaError(lsStandalone, state);
 }
 
 StandaloneLuaWindow* StandaloneLuaWindow::instance()
@@ -356,7 +379,6 @@ void StandaloneLuaWindow::luaShowError()
   if (runFunction != LUA_REFNIL) luaL_unref(lsStandalone, LUA_REGISTRYINDEX, runFunction);
   runFunction = LUA_REFNIL;
   hasError = true;
-  extern void luaError(lua_State *L, uint8_t error);
   luaError(lsStandalone, SCRIPT_RUNTIME_ERROR);
 }
 
