@@ -224,15 +224,21 @@ class ScriptLineButton : public ListLineButton
 
       lbl = etx_label_create(lvobj);
       etx_obj_add_style(lbl, styles->text_align_left, LV_PART_MAIN);
-      lv_obj_set_grid_cell(lbl, LV_GRID_ALIGN_START, 3, 1, LV_GRID_ALIGN_CENTER,
-                           0, 1);
+      lv_obj_set_grid_cell(lbl, LV_GRID_ALIGN_STRETCH, 3, 1,
+                           LV_GRID_ALIGN_CENTER, 0, 1);
+      // Status text may not fit on narrow screens
+      lv_label_set_long_mode(lbl, LV_LABEL_LONG_DOT);
 
       // TODO: runtimeData->instructions has no value
       switch (runtimeData->state) {
         case SCRIPT_SYNTAX_ERROR:
+          lv_label_set_text(lbl, STR_SCRIPT_SYNTAX_ERROR);
+          break;
         case SCRIPT_RUNTIME_ERROR:
+          lv_label_set_text(lbl, STR_SCRIPT_RUNTIME_ERROR);
+          break;
         case SCRIPT_PANIC:
-          lv_label_set_text(lbl, STR_SCRIPT_ERROR);
+          lv_label_set_text(lbl, STR_SCRIPT_PANIC);
           break;
         case SCRIPT_NOFILE:
           lv_label_set_text(lbl, STR_NEEDS_FILE);
