@@ -1,0 +1,45 @@
+---
+# DROP: temporary probe for the runner-images sysctl regression (ASan
+# investigation for 2.11 CI). Runs on the runner host, not in a container.
+name: sysctl probe
+on:
+  pull_request:
+    branches:
+      - '[0-9]+.[0-9]+'
+    paths:
+      - '.github/workflows/sysctl-probe.yml'
+
+jobs:
+  probe:
+    name: probe (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - name: Inspect sysctl configuration
+        run: |
+          set +e
+          section() { echo; echo "=== $1"; }
+          section "image"
+          grep PRETTY_NAME /etc/os-release
+          echo "ImageOS=$ImageOS ImageVersion=$ImageVersion"
+          uname -r
+          dpkg-query -W -f='${Package} ${Version}\n' procps systemd
+          section "/etc/sysctl.conf"
+          ls -l /etc/sysctl.conf
+          grep -nE 'mmap_rnd_bits|max_map_count|inotify' /etc/sysctl.conf
+          section "/etc/sysctl.d"
+          ls -l /etc/sysctl.d/
+          section "/etc/sysctl.d/99-sysctl.conf (compat symlink)"
+          ls -l /etc/sysctl.d/99-sysctl.conf
+          section "files systemd-sysctl loads (systemd-analyze cat-config sysctl.d)"
+          systemd-analyze cat-config sysctl.d | grep -E '^# /|mmap_rnd_bits|max_map_count|inotify'
+          section "every sysctl config file mentioning these keys"
+          grep -rnE 'mmap_rnd_bits|max_map_count|inotify' /etc/sysctl.conf /etc/sysctl.d /run/sysctl.d /usr/lib/sysctl.d /usr/local/lib/sysctl.d 2>/dev/null
+          section "current values"
+          sysctl vm.mmap_rnd_bits vm.max_map_count fs.inotify.max_user_watches fs.inotify.max_user_instances
+          section "systemd-sysctl.service"
+          systemctl status systemd-sysctl.service --no-pager 2>&1 | head -5
