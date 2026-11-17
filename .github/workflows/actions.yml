@@ -23,7 +23,10 @@ on:
 jobs:
   test:
     name: Run tests
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to Ubuntu 26 from 2026-10-19. On those runners the
+    # GCC 9 ASan runtime in edgetx-dev:2.11 crashes at startup (see the
+    # "Show ASLR settings" step), so stay on the 24.04 image.
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         target:
@@ -69,7 +72,14 @@ jobs:
           submodules: recursive
           # fetch-depth: 0 # https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
 
+      - name: Show ASLR settings
+        run: |
+          echo "kernel: $(uname -r)"
+          echo "vm.mmap_rnd_bits: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          echo "kernel.randomize_va_space: $(cat /proc/sys/kernel/randomize_va_space)"
+
       - name: Test ${{ matrix.target }}
+        timeout-minutes: 30
         env:
           FLAVOR: ${{ matrix.target }}
         run: |
