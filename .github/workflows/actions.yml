@@ -62,6 +62,9 @@ jobs:
       image: ghcr.io/edgetx/edgetx-dev:2.11
       volumes:
         - ${{ github.workspace }}:/src
+      # Docker's default seccomp profile blocks the personality() call that
+      # setarch -R needs (see the "Test" step).
+      options: --security-opt seccomp=unconfined
     steps:
       - name: Check out the repo
         uses: actions/checkout@v7
@@ -69,12 +72,25 @@ jobs:
           submodules: recursive
           # fetch-depth: 0 # https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
 
+      - name: Show ASLR settings
+        run: |
+          echo "kernel: $(uname -r)"
+          echo "vm.mmap_rnd_bits: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          echo "kernel.randomize_va_space: $(cat /proc/sys/kernel/randomize_va_space)"
+          echo "personality under setarch -R: $(setarch "$(uname -m)" -R cat /proc/self/personality)"
+
+      # gtests-radio is built with ASan. The 2.11 image's GCC 9 ASan runtime
+      # can crash at startup on the runners' randomised memory layout, then
+      # loop printing "AddressSanitizer:DEADLYSIGNAL" until the job times out.
+      # Running with address randomisation disabled avoids that; child
+      # processes, including gtests-radio, inherit the setting.
       - name: Test ${{ matrix.target }}
+        timeout-minutes: 30
         env:
           FLAVOR: ${{ matrix.target }}
         run: |
           echo "Running commit tests"
-          ./tools/commit-tests.sh
+          setarch "$(uname -m)" -R ./tools/commit-tests.sh
 
 
   build:
