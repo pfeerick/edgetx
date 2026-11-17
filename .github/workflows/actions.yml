@@ -67,18 +67,17 @@ jobs:
       # anything the job couldn't do anyway.
       options: --privileged
     steps:
-      # The Ubuntu 26.04 runner images (ubuntu-latest since 2026-10-19) don't
-      # apply the vm.mmap_rnd_bits=28 setting runner-images writes to
-      # /etc/sysctl.conf, because systemd-sysctl no longer reads that file
-      # there. At 32 bits, the GCC 9 ASan runtime in edgetx-dev:2.11 can crash
-      # at startup and loop printing "AddressSanitizer:DEADLYSIGNAL". vm.*
-      # settings are kernel-wide, so setting it here applies to the whole
-      # runner VM, including gtests-radio.
-      - name: Restore vm.mmap_rnd_bits=28
+      # runner-images#15108: ubuntu-26.04 (ubuntu-latest since 2026-10-19)
+      # doesn't apply the image's kernel parameters at boot, so restore them
+      # (fix: runner-images#15146). At vm.mmap_rnd_bits=32 the GCC 9 ASan
+      # runtime in edgetx-dev:2.11 can crash at startup and loop printing
+      # "AddressSanitizer:DEADLYSIGNAL". These settings are kernel-wide, so
+      # writing them from the privileged container applies to the whole
+      # runner VM.
+      - name: Restore kernel parameters
         run: |
-          echo "vm.mmap_rnd_bits before: $(cat /proc/sys/vm/mmap_rnd_bits)"
-          echo 28 > /proc/sys/vm/mmap_rnd_bits
-          echo "vm.mmap_rnd_bits after: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          sysctl vm.mmap_rnd_bits fs.inotify.max_user_instances fs.inotify.max_user_watches
+          sysctl -w fs.inotify.max_user_instances=1280 fs.inotify.max_user_watches=655360 vm.mmap_rnd_bits=28
 
       - name: Check out the repo
         uses: actions/checkout@v7
@@ -90,6 +89,8 @@ jobs:
         run: |
           echo "kernel: $(uname -r)"
           echo "vm.mmap_rnd_bits: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          echo "fs.inotify.max_user_instances: $(cat /proc/sys/fs/inotify/max_user_instances)"
+          echo "fs.inotify.max_user_watches: $(cat /proc/sys/fs/inotify/max_user_watches)"
           echo "kernel.randomize_va_space: $(cat /proc/sys/kernel/randomize_va_space)"
 
       - name: Test ${{ matrix.target }}
