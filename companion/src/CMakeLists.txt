@@ -148,7 +148,7 @@ set(HWDEFS_QRC "${CMAKE_CURRENT_BINARY_DIR}/hwdefs.qrc")
 set(HWDEFS_CMD "${COMPANION_SRC_DIRECTORY}/../util/generate_hwdefs_qrc.py")
 
 add_custom_command(OUTPUT ${HWDEFS_QRC}
-  COMMAND ${HWDEFS_CMD} -d ${HWDEFS_DIR}
+  COMMAND ${PYTHON_EXECUTABLE} ${HWDEFS_CMD} -d ${HWDEFS_DIR}
                         -t ${HWDEFS_TMPL}
                         -p ${HWDEFS_PHDR}
                         -o ${HWDEFS_QRC}
@@ -288,6 +288,14 @@ set(simu_SRCS simulator.cpp )
 add_executable(${SIMULATOR_NAME} MACOSX_BUNDLE ${WIN_EXECUTABLE_TYPE} ${simu_SRCS} ${icon_RC})
 target_link_libraries(${SIMULATOR_NAME} PRIVATE ${CPN_COMMON_LIB})
 
+if(WIN32 AND NOT MINGW)
+  # MSVC links a 1 MB stack, half of MinGW's default. Threads created without
+  # an explicit size (including the simulator's) get the same, and Companion
+  # keeps large objects (e.g. ModelData) on the stack.
+  target_link_options(${COMPANION_NAME} PRIVATE "LINKER:/STACK:8388608")
+  target_link_options(${SIMULATOR_NAME} PRIVATE "LINKER:/STACK:8388608")
+endif()
+
 add_subdirectory(tests)
 
 ############# Install ####################
@@ -368,8 +376,10 @@ else()
   string(TOLOWER ${PCB} FLAVOUR)
 endif()
 
-include(FindDfuutil)
-include(FindLibusb1)
+if(NOT WIN32)
+  include(FindDfuutil)
+  include(FindLibusb1)
+endif()
 include(FindOpenSSL)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -416,19 +426,12 @@ elseif(WIN32)
   install(DIRECTORY ${CMAKE_BINARY_DIR}/plugins/ DESTINATION ${INSTALL_DESTINATION})
 
   # supporting utilities
-  if(LIBUSB1_FOUND)
-    if(MINGW)
-      set(LIBUSB1_LIBRARY_DIR "${LIBUSB1_LIBRARY_DIR}/../bin")
-    endif()
-
-    set(LIBUSB1_LIBRARY_FILE "${LIBUSB1_LIBRARY_DIR}/libusb-1.0.dll")
-
-    if(EXISTS "${LIBUSB1_LIBRARY_FILE}")
-      install(FILES "${LIBUSB1_LIBRARY_FILE}" DESTINATION ${INSTALL_DESTINATION})
-    endif()
-
-    if(DFU_UTIL_FOUND)
-      install(FILES "${DFU_UTIL_PATH}" DESTINATION ${INSTALL_DESTINATION})
+  # rdfu gets its own directory so its MSVC runtime is never picked up by
+  # Companion, which loads DLLs from its own directory first
+  if(RDFU_EXECUTABLE)
+    install(PROGRAMS "${RDFU_EXECUTABLE}" DESTINATION ${INSTALL_DESTINATION}/rdfu RENAME rdfu.exe)
+    if(RDFU_VCRUNTIME)
+      install(FILES "${RDFU_VCRUNTIME}" DESTINATION ${INSTALL_DESTINATION}/rdfu)
     endif()
   endif()
 
@@ -465,15 +468,27 @@ elseif(WIN32)
     install(FILES "${SDL2_LIB_PATH}" DESTINATION ${INSTALL_DESTINATION})
   endif()
 
+  if(PTHREADS4W_DLL)
+    install(FILES "${PTHREADS4W_DLL}" DESTINATION ${INSTALL_DESTINATION})
+  endif()
+
+  if(NOT MINGW)
+    # The installer runs the VC++ redistributable rather than shipping its DLLs
+    include(FindMSVCRedist)
+  endif()
+
   # Qt dlls (using windeployqt)
   ## Qt translations are already packaged into our custom qrc. Also don't need software rendering engines.
   set(wdqtopts --no-translations --no-opengl-sw --no-system-d3d-compiler --no-angle)
-  if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    #set(wdqtopts ${wdqtopts} --release)  # release builds aren't always properly detected with mingw
-    set(wdqtopts ${wdqtopts} --debug)  # workaround for bug in Qt 5.15 windeployqt.exe
+  if(MINGW)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+      #set(wdqtopts ${wdqtopts} --release)  # release builds aren't always properly detected with mingw
+      set(wdqtopts ${wdqtopts} --debug)  # workaround for bug in Qt 5.15 windeployqt.exe
+    endif()
+  else()
+    set(wdqtopts ${wdqtopts} --release --no-compiler-runtime)
   endif()
-  set(wdqtopts ${wdqtopts} -dir "\"${INSTALL_DESTINATION}\"" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${COMPANION_NAME}.exe" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SIMULATOR_NAME}.exe")
-  list(JOIN wdqtopts " " wdqtopts)
+  set(wdqtopts ${wdqtopts} -dir "${INSTALL_DESTINATION}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${COMPANION_NAME}.exe" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SIMULATOR_NAME}.exe")
 
   # Add installer command to execute windeployqt
   message(STATUS "windeployqt command: ${QT_BIN_DIR}/windeployqt.exe ${wdqtopts}")
@@ -492,16 +507,21 @@ if(WIN32)
 
   if (NSIS_EXE)
     file(TO_NATIVE_PATH "${INSTALL_DESTINATION}" NSIS_DISTRO)  # all files in here will be included in installer
+    if(MSVC_REDIST_EXE)
+      file(TO_NATIVE_PATH "${MSVC_REDIST_EXE}" NSIS_MSVC_REDIST_FILE)
+      get_filename_component(NSIS_MSVC_REDIST_EXE "${MSVC_REDIST_EXE}" NAME)
+    endif()
     set(NSI_FILE "${PROJECT_BINARY_DIR}/companion/companion.nsi")
     configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../targets/windows/companion.nsi.in" "${NSI_FILE}" @ONLY)
 
     add_custom_target(installer
       # The 'install' target prepares all the distro files, make sure it has been executed first.
       COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target install --config Release
-      COMMAND "${QT_BIN_DIR}/windeployqt.exe" "${wdqtopts}"
+      COMMAND "${QT_BIN_DIR}/windeployqt.exe" ${wdqtopts}
       COMMAND "${NSIS_EXE}" "${NSI_FILE}"
       DEPENDS "${NSI_FILE}"
       COMMENT "Building Windows NSIS installer..."
+      VERBATIM
     )
   endif()
 endif()

@@ -492,6 +492,10 @@ if(NATIVE_BUILD)
   target_compile_options(radiolib_native PUBLIC -DSIMU)
   add_dependencies(radiolib_native ${RADIO_DEPENDENCIES})
   set_property(TARGET radiolib_native PROPERTY POSITION_INDEPENDENT_CODE ON)
+  if(WIN32)
+    # e.g. pthreads4w for MSVC builds
+    target_include_directories(radiolib_native SYSTEM PUBLIC ${WIN_INCLUDE_DIRS})
+  endif()
 
   add_subdirectory(targets/simu)
   add_subdirectory(tests)
