@@ -39,9 +39,14 @@ if(Qt5Core_FOUND OR FOX_FOUND)
 endif()
 
 if(Qt5Core_FOUND AND NOT DISABLE_COMPANION)
-  find_package(Libusb1)
-  if(LIBUSB1_FOUND)
-    find_package(Dfuutil)
+  if(WIN32)
+    # Windows flashes with rdfu, which needs neither dfu-util nor libusb
+    include(FetchRdfu)
+  else()
+    find_package(Libusb1)
+    if(LIBUSB1_FOUND)
+      find_package(Dfuutil)
+    endif()
   endif()
 
   if(LINUX)

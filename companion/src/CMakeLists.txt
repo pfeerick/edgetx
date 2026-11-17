@@ -368,8 +368,10 @@ else()
   string(TOLOWER ${PCB} FLAVOUR)
 endif()
 
-include(FindDfuutil)
-include(FindLibusb1)
+if(NOT WIN32)
+  include(FindDfuutil)
+  include(FindLibusb1)
+endif()
 include(FindOpenSSL)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -416,19 +418,12 @@ elseif(WIN32)
   install(DIRECTORY ${CMAKE_BINARY_DIR}/plugins/ DESTINATION ${INSTALL_DESTINATION})
 
   # supporting utilities
-  if(LIBUSB1_FOUND)
-    if(MINGW)
-      set(LIBUSB1_LIBRARY_DIR "${LIBUSB1_LIBRARY_DIR}/../bin")
-    endif()
-
-    set(LIBUSB1_LIBRARY_FILE "${LIBUSB1_LIBRARY_DIR}/libusb-1.0.dll")
-
-    if(EXISTS "${LIBUSB1_LIBRARY_FILE}")
-      install(FILES "${LIBUSB1_LIBRARY_FILE}" DESTINATION ${INSTALL_DESTINATION})
-    endif()
-
-    if(DFU_UTIL_FOUND)
-      install(FILES "${DFU_UTIL_PATH}" DESTINATION ${INSTALL_DESTINATION})
+  # rdfu gets its own directory so its MSVC runtime is never picked up by
+  # Companion, which loads DLLs from its own directory first
+  if(RDFU_EXECUTABLE)
+    install(PROGRAMS "${RDFU_EXECUTABLE}" DESTINATION ${INSTALL_DESTINATION}/rdfu RENAME rdfu.exe)
+    if(RDFU_VCRUNTIME)
+      install(FILES "${RDFU_VCRUNTIME}" DESTINATION ${INSTALL_DESTINATION}/rdfu)
     endif()
   endif()
 
