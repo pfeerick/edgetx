@@ -62,14 +62,38 @@ jobs:
       image: ghcr.io/edgetx/edgetx-dev:2.11
       volumes:
         - ${{ github.workspace }}:/src
+      # Needed to write vm.mmap_rnd_bits (see below). The runner is a
+      # throwaway VM where the job already has sudo, so this doesn't open up
+      # anything the job couldn't do anyway.
+      options: --privileged
     steps:
+      # The Ubuntu 26.04 runner images (ubuntu-latest since 2026-10-19) don't
+      # apply the vm.mmap_rnd_bits=28 setting runner-images writes to
+      # /etc/sysctl.conf, because systemd-sysctl no longer reads that file
+      # there. At 32 bits, the GCC 9 ASan runtime in edgetx-dev:2.11 can crash
+      # at startup and loop printing "AddressSanitizer:DEADLYSIGNAL". vm.*
+      # settings are kernel-wide, so setting it here applies to the whole
+      # runner VM, including gtests-radio.
+      - name: Restore vm.mmap_rnd_bits=28
+        run: |
+          echo "vm.mmap_rnd_bits before: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          echo 28 > /proc/sys/vm/mmap_rnd_bits
+          echo "vm.mmap_rnd_bits after: $(cat /proc/sys/vm/mmap_rnd_bits)"
+
       - name: Check out the repo
         uses: actions/checkout@v7
         with:
           submodules: recursive
           # fetch-depth: 0 # https://github.com/actions/checkout#Fetch-all-history-for-all-tags-and-branches
 
+      - name: Show ASLR settings
+        run: |
+          echo "kernel: $(uname -r)"
+          echo "vm.mmap_rnd_bits: $(cat /proc/sys/vm/mmap_rnd_bits)"
+          echo "kernel.randomize_va_space: $(cat /proc/sys/kernel/randomize_va_space)"
+
       - name: Test ${{ matrix.target }}
+        timeout-minutes: 30
         env:
           FLAVOR: ${{ matrix.target }}
         run: |
