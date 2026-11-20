@@ -31,6 +31,8 @@
 #include <QFileDialog>
 
 #include <chrono>
+#include <set>
+#include <vector>
 #include <stdexcept>
 
 #define TR(msg) QCoreApplication::translate("RadioInterface", msg)
@@ -289,7 +291,8 @@ void FirmwareWriterWorker::runDfu()
 
     if (!is_uf2_payload(buffer_slice)) {
       auto addr = device.default_start_address();
-      writeRegion(device, addr, buffer_slice);
+      std::set<uint32_t> erased_pages;
+      writeRegion(device, addr, buffer_slice, erased_pages);
     } else {
       writeUf2(device, buffer_slice);
     }
@@ -311,6 +314,10 @@ void FirmwareWriterWorker::writeUf2(DfuDevice &device, const SliceU8 &data)
   auto range_it = UF2RangeIterator::from_slice(data);
   auto addr_range = UF2AddressRange::new_empty();
 
+  // Pages erased so far: ranges sharing a page must not erase it again, as
+  // this would wipe data written by a previous range
+  std::set<uint32_t> erased_pages;
+
   while (range_it->next(*addr_range)) {
     auto addr = addr_range->start_address();
     const auto &payload = addr_range->payload();
@@ -319,22 +326,30 @@ void FirmwareWriterWorker::writeUf2(DfuDevice &device, const SliceU8 &data)
 
     if (addr_range->reboot_address(reboot_address)) {
       rebootAndRediscover(device, addr, payload, reboot_address, 30s);
+      erased_pages.clear();
     } else {
-      writeRegion(device, addr, payload);
+      writeRegion(device, addr, payload, erased_pages);
     }
   }
 }
 
 void FirmwareWriterWorker::writeRegion(const DfuDevice &device, uint32_t addr,
-                                       const SliceU8 &data)
+                                       const SliceU8 &data,
+                                       std::set<uint32_t> &erased_pages)
 {
+  if (data.empty()) return;
+
   emit statusChanged(tr("Erasing..."));
 
   auto start_address = addr;
   auto end_address = start_address + data.size() - 1;
 
   auto ctx = device.start_download(start_address, end_address);
-  auto erase_pages = ctx->get_erase_pages();
+  std::vector<uint32_t> erase_pages;
+  for (auto page : ctx->get_erase_pages()) {
+    if (erased_pages.find(page) == erased_pages.end())
+      erase_pages.push_back(page);
+  }
   auto pages = erase_pages.size();
 
   emit newMessage("placeholder");  // anchor for updateMessage
@@ -342,6 +357,7 @@ void FirmwareWriterWorker::writeRegion(const DfuDevice &device, uint32_t addr,
   for (size_t i = 0; i < pages; i++) {
     updateEraseStatus(i + 1, pages);
     ctx->page_erase(erase_pages[i]);
+    erased_pages.insert(erase_pages[i]);
   }
 
   emit statusChanged(tr("Writing..."));

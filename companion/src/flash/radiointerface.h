@@ -26,6 +26,8 @@
 #include <QThread>
 #include <QString>
 
+#include <set>
+
 using SliceU8 = rust::Slice<const uint8_t>;
 using ::rust::Vec;
 
@@ -77,7 +79,8 @@ class FirmwareWriterWorker : public QThread
 
   private:
     void writeUf2(DfuDevice &device, const SliceU8 &data);
-    void writeRegion(const DfuDevice &device, uint32_t addr, const SliceU8 &data);
+    void writeRegion(const DfuDevice &device, uint32_t addr, const SliceU8 &data,
+                     std::set<uint32_t> &erased_pages);
     void updateEraseStatus(size_t page, size_t pages);
     void updateDownloadStatus(size_t bytes, size_t total);
     void runDfu();
