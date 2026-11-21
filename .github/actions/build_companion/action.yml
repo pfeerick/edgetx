@@ -68,12 +68,12 @@ runs:
       shell: pwsh
       run: ${{ github.action_path }}/setup-msvc.ps1
 
-    # TEST ONLY: link Companion against the rs-dfu CI build of EdgeTX/rs-dfu#22
+    # TEST ONLY: link Companion against the rs-dfu CI build of EdgeTX/rs-dfu#23
     # instead of the latest release. Runs after fetch_deps so its RS_DFU_URL wins.
-    - name: Fetch rs-dfu from EdgeTX/rs-dfu#22
+    - name: Fetch rs-dfu from EdgeTX/rs-dfu#23
       uses: ./.github/actions/fetch_rsdfu_pr
       with:
-        pr: '22'
+        pr: '23'
 
     - name: Install NSIS
       if: runner.os == 'Windows'
