@@ -22,6 +22,14 @@ if(Qt6Core_FOUND AND NOT DISABLE_COMPANION)
 
   include(FetchRsDfuLib)
   find_package(rs_dfu REQUIRED)
+
+  # The Rust standard library in current rs-dfu builds calls
+  # WaitOnAddress/WakeByAddress*, which live in synchronization.lib, but
+  # rs-dfu's CMake config does not list it among its Windows system libs
+  if(WIN32 AND TARGET rs_dfu::static)
+    set_property(TARGET rs_dfu::static APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES synchronization)
+  endif()
 endif()
 
 # Windows-specific includes and libs shared by sub-projects
