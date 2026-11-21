@@ -23,6 +23,9 @@
 
 #include <QtWidgets>
 
+class FirmwareInterface;
+class ProgressWidget;
+
 namespace Ui
 {
   class FlashFirmwareDialog;
@@ -72,4 +75,12 @@ class FlashFirmwareDialog : public QDialog
     QCheckBox *chkProfComp;
     bool isFileConnectionCompatible();
     void shrink();
+    void checkAgainstBootloader(ProgressWidget *progress, const FirmwareInterface &newfw,
+                                bool checkHw, bool checkProfile, bool backup,
+                                uint32_t uf2FwAddr);
+    void backupAndFlash(ProgressWidget *progress, const FirmwareInterface &newfw,
+                        uint32_t uf2FwAddr);
+    void flashWithoutReadBack(ProgressWidget *progress, const FirmwareInterface &newfw,
+                              bool checkProfile, uint32_t uf2FwAddr);
+    bool waitForStmDfu(ProgressWidget *progress, uint32_t uf2FwAddr);
 };

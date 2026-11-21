@@ -1,0 +1,58 @@
+name: 'Fetch rs-dfu from a pull request CI run'
+description: >
+  TEST ONLY. Downloads the rs-dfu static library built by rs-dfu's own CI for
+  the current head of a pull request and exports RS_DFU_URL, so
+  cmake/FetchRsDfuLib.cmake uses it instead of the latest release. Must run
+  after fetch_deps so this RS_DFU_URL wins.
+inputs:
+  pr:
+    description: 'rs-dfu pull request number'
+    required: true
+  repository:
+    description: 'rs-dfu repository'
+    default: 'EdgeTX/rs-dfu'
+  token:
+    description: 'Token for the GitHub API'
+    default: ${{ github.token }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Fetch rs-dfu PR artifact
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        RSDFU_REPO: ${{ inputs.repository }}
+        RSDFU_PR: ${{ inputs.pr }}
+        RUNNER_OS_NAME: ${{ runner.os }}
+      run: |
+        # Artifact and archive names from rs-dfu's .github/workflows/rust.yml
+        case "${RUNNER_OS_NAME}" in
+          Linux)   artifact="library-Linux-x86_64";   archive="rs_dfu-x86_64-unknown-linux-gnu.tar.gz" ;;
+          Windows) artifact="library-Windows-x86_64"; archive="rs_dfu-x86_64-pc-windows-msvc.tar.gz" ;;
+          macOS)   artifact="library-macOS-universal"; archive="rs_dfu-universal-apple-darwin.tar.gz" ;;
+          *) echo "::error::Unsupported runner OS: ${RUNNER_OS_NAME}"; exit 1 ;;
+        esac
+
+        sha="$(gh api "repos/${RSDFU_REPO}/pulls/${RSDFU_PR}" --jq .head.sha)"
+        echo "${RSDFU_REPO}#${RSDFU_PR} head: ${sha}"
+
+        run_id="$(gh api "repos/${RSDFU_REPO}/actions/runs?head_sha=${sha}&status=success" \
+          --jq '[.workflow_runs[] | select(.path == ".github/workflows/rust.yml")][0].id // empty')"
+        if [[ -z "${run_id}" ]]; then
+          echo "::error::No successful rs-dfu CI run for ${RSDFU_REPO}#${RSDFU_PR} head ${sha} (still running, failed or awaiting approval?)"
+          exit 1
+        fi
+        echo "::notice title=rs-dfu::Using ${artifact} from ${RSDFU_REPO}#${RSDFU_PR} @ ${sha} (run ${run_id})"
+
+        out="${RUNNER_TEMP}/rs-dfu-pr${RSDFU_PR}"
+        rm -rf "${out}"
+        gh run download "${run_id}" --repo "${RSDFU_REPO}" --name "${artifact}" --dir "${out}"
+        ls -l "${out}"
+        if [[ ! -f "${out}/${archive}" ]]; then
+          echo "::error::${archive} not found in artifact ${artifact}"
+          exit 1
+        fi
+        # via stdin: GNU tar in Git Bash reads "D:\..." as a remote host:path
+        tar -tzvf - < "${out}/${archive}"
+        echo "RS_DFU_URL=${out}/${archive}" >> "${GITHUB_ENV}"
