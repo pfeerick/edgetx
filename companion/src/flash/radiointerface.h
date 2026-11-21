@@ -31,12 +31,30 @@
 using SliceU8 = rust::Slice<const uint8_t>;
 using ::rust::Vec;
 
+// How to read the current firmware back from the radio
+struct FirmwareReadOptions {
+  // UF2 file about to be flashed. Over DFU, when set and the device does not
+  // expose the UF2 firmware address (STM32 ROM DFU on H7 radios with the
+  // firmware in external flash), the UF2 reboot block is sent on its own to
+  // start the radio's EdgeTX bootloader in DFU mode, and the firmware is read
+  // from there. Nothing is written to flash.
+  QByteArray uf2Source;
+  // bytes to read from the device's default start address, 0 reads the whole
+  // segment (not used when reading the UF2 firmware address)
+  uint32_t maxLength = 0;
+  // stop reading at the first 64 KiB of erased flash and drop the trailing
+  // erased bytes, instead of reading the whole segment (only applies when
+  // reading the UF2 firmware address)
+  bool stopAtErased = false;
+};
+
 class FirmwareReaderWorker : public QThread
 {
   Q_OBJECT
 
   public:
-    explicit FirmwareReaderWorker(QObject *parent = nullptr);
+    explicit FirmwareReaderWorker(QObject *parent = nullptr,
+                                  const FirmwareReadOptions &options = {});
     ~FirmwareReaderWorker();
 
   protected:
@@ -48,9 +66,14 @@ class FirmwareReaderWorker : public QThread
     void progressChanged(int value, int total);
     void statusChanged(const QString &status);
     void error(const QString &error);
+    // the radio was rebooted from ROM DFU into its bootloader's DFU to read
+    // the firmware, emitted before complete()
+    void rebootedForRead();
     void complete(const QByteArray& data);
 
   private:
+    FirmwareReadOptions options;
+
     void runDfu();
     void runUf2();
 };
@@ -75,6 +98,7 @@ class FirmwareWriterWorker : public QThread
     void progressChanged(int value, int total);
     void statusChanged(const QString &status);
     void error(const QString &error);
+    void warning(const QString &msg);
     void complete();
 
   private:
@@ -108,6 +132,12 @@ bool readFirmware(const std::function<void(const QByteArray &)>& onComplete,
                   const std::function<void(const QString &)>& onError,
                   ProgressWidget *progress);
 
+// onComplete's second argument is true when the radio was rebooted from ROM
+// DFU into its bootloader's DFU to read the firmware (see FirmwareReadOptions)
+bool readFirmware(const std::function<void(const QByteArray &, bool)>& onComplete,
+                  const std::function<void(const QString &)>& onError,
+                  ProgressWidget *progress, const FirmwareReadOptions &options);
+
 bool readFirmware(QByteArray &data, ProgressWidget *progress);
 bool readFirmware(const QString &filename, ProgressWidget *progress);
 
@@ -124,6 +154,13 @@ QString getDevicesInfo();
 QString getFirmwareFilesFilter();
 Uf2Info getUf2Info();
 bool isDfuDeviceFound();
+// Address the UF2 firmware is written to after the reboot block, i.e. the
+// address that is only reachable once the radio's bootloader is running.
+// Returns false when the UF2 has no reboot block followed by firmware.
+bool getUf2FirmwareAddress(const QByteArray &uf2, uint32_t &addr);
+// Returns false unless exactly one DFU device is present; otherwise sets
+// covered to whether that device exposes a memory segment containing addr.
+bool probeDfuAddress(uint32_t addr, bool &covered);
 bool isUf2DeviceFound();
 bool isRadioConnected();
 bool writeFirmwareToFile(QWidget *parent, const QByteArray &data, ProgressWidget *progress, bool promptForFile = false);

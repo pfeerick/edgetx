@@ -31,6 +31,7 @@
 #include <QFileDialog>
 
 #include <chrono>
+#include <memory>
 #include <set>
 #include <vector>
 #include <stdexcept>
@@ -47,10 +48,123 @@ constexpr unsigned long REDISCOVER_INITIAL_DELAY_MS {500};
 constexpr unsigned long REDISCOVER_POLL_INTERVAL_MS {200};
 constexpr int           REDISCOVER_RESET_RETRIES    {5};
 
+// the size of one external flash erase sector on H7 radios
+constexpr uint32_t      ERASED_STOP_LENGTH          {64 * 1024};
+
 using namespace std::chrono_literals;
 
-FirmwareReaderWorker::FirmwareReaderWorker(QObject *parent) :
-  QThread(parent)
+// rediscovering the radio after asking it to start its bootloader in DFU
+// mode, only to read the current firmware; a bootloader without support for
+// this boots the firmware instead and is never found
+constexpr auto          READBACK_REDISCOVER_TIMEOUT {10s};
+
+namespace {
+
+// Where the parts of a two-stage UF2 go: the reboot block that makes the STM32
+// ROM DFU start the newly written EdgeTX bootloader in DFU mode, and the
+// firmware that is written through that bootloader.
+struct Uf2DfuLayout {
+  bool hasReboot = false;
+  uint32_t rebootBlockAddress = 0;
+  QByteArray rebootBlock;
+  uint32_t rebootTarget = 0;
+  bool hasFirmware = false;
+  uint32_t firmwareAddress = 0;
+};
+
+Uf2DfuLayout getUf2DfuLayout(const SliceU8 &data)
+{
+  Uf2DfuLayout layout;
+  if (!is_uf2_payload(data))
+    return layout;
+
+  auto range_it = UF2RangeIterator::from_slice(data);
+  auto addr_range = UF2AddressRange::new_empty();
+
+  while (range_it->next(*addr_range)) {
+    uint32_t reboot_address = 0;
+    if (!layout.hasReboot) {
+      if (addr_range->reboot_address(reboot_address)) {
+        const auto &payload = addr_range->payload();
+        layout.hasReboot = true;
+        layout.rebootBlockAddress = addr_range->start_address();
+        layout.rebootBlock = QByteArray((const char *)payload.data(), payload.size());
+        layout.rebootTarget = reboot_address;
+      }
+    } else {
+      layout.hasFirmware = true;
+      layout.firmwareAddress = addr_range->start_address();
+      break;
+    }
+  }
+
+  return layout;
+}
+
+bool deviceCovers(const DfuDevice &device, uint32_t addr)
+{
+  for (const auto &intf : device.interfaces()) {
+    for (const auto &seg : intf.segments()) {
+      if (addr >= seg.start_addr && addr < seg.end_addr)
+        return true;
+    }
+  }
+  return false;
+}
+
+// Poll for the device to come back after a reboot until ready() accepts it.
+// Waits a little first so the old device has dropped off the bus, otherwise
+// it may still be enumerated and be picked up instead of the rebooted one.
+template <typename Duration, typename Ready>
+bool rediscoverDevice(DfuDevice &device, Duration timeout, Ready ready)
+{
+  QThread::msleep(REDISCOVER_INITIAL_DELAY_MS);
+
+  auto start = std::chrono::steady_clock::now();
+
+  while (std::chrono::steady_clock::now() - start < timeout) {
+    try {
+      // enumeration may fail transiently while the device re-enumerates
+      if (device.rediscover() && ready(device))
+        return true;
+    } catch (const std::exception &e) {
+      qDebug() << "DFU rediscover failed, retrying:" << e.what();
+    }
+    QThread::msleep(REDISCOVER_POLL_INTERVAL_MS);
+  }
+
+  return false;
+}
+
+// make sure a rebooted device is ready (dfuIDLE, no error status)
+void resetStateWithRetry(DfuDevice &device)
+{
+  for (int retry = 1;; retry++) {
+    try {
+      device.reset_state();
+      return;
+    } catch (const std::exception &e) {
+      if (retry >= REDISCOVER_RESET_RETRIES) throw;
+      qDebug() << "DFU reset state failed, retrying:" << e.what();
+      QThread::msleep(REDISCOVER_POLL_INTERVAL_MS);
+    }
+  }
+}
+
+size_t countTrailingErased(const QByteArray &data, size_t from)
+{
+  size_t count = 0;
+  for (size_t i = data.size(); i > from && uint8_t(data[i - 1]) == 0xFF; i--)
+    count++;
+  return count;
+}
+
+}  // namespace
+
+FirmwareReaderWorker::FirmwareReaderWorker(QObject *parent,
+                                           const FirmwareReadOptions &options) :
+  QThread(parent),
+  options(options)
 {
 }
 
@@ -83,11 +197,54 @@ void FirmwareReaderWorker::runDfu()
     device.reset_state();
 
     auto addr = device.default_start_address();
-    auto ctx = device.start_upload(addr, 0);
+    uint32_t length = options.maxLength;
+    bool stopAtErased = false;
+
+    if (!options.uf2Source.isEmpty()) {
+      SliceU8 uf2((const uint8_t *)options.uf2Source.constData(),
+                  options.uf2Source.size());
+      const auto layout = getUf2DfuLayout(uf2);
+
+      if (layout.hasReboot && layout.hasFirmware) {
+        const auto fwAddr = layout.firmwareAddress;
+
+        if (!deviceCovers(device, fwAddr)) {
+          // STM32 ROM DFU, which cannot reach the firmware: send only the
+          // reboot block (no flash is written) so the radio's own bootloader
+          // starts in DFU mode and exposes the firmware memory
+          emit newMessage(tr("Starting the radio's bootloader in DFU mode to read the current firmware..."));
+          SliceU8 rebootBlock((const uint8_t *)layout.rebootBlock.constData(),
+                              layout.rebootBlock.size());
+          device.reboot(layout.rebootBlockAddress, rebootBlock, layout.rebootTarget);
+
+          emit newMessage(tr("Waiting for device to reconnect..."));
+          if (!rediscoverDevice(device, READBACK_REDISCOVER_TIMEOUT,
+                                [fwAddr](const DfuDevice &dev) {
+                                  return deviceCovers(dev, fwAddr);
+                                })) {
+            throw std::runtime_error(
+                tr("the radio did not reconnect in bootloader DFU mode, its "
+                   "bootloader may be too old to support this")
+                    .toStdString());
+          }
+
+          resetStateWithRetry(device);
+          emit newMessage(tr("Device reconnected"));
+          emit rebootedForRead();
+        }
+
+        addr = fwAddr;
+        length = 0;
+        stopAtErased = options.stopAtErased;
+      }
+    }
+
+    auto ctx = device.start_upload(addr, length);
 
     size_t total_length = ctx->get_length();
     size_t xfer_size = ctx->get_transfer_size();
     size_t bytes_uploaded = 0;
+    size_t erased_length = 0;  // erased bytes at the end of data
 
     emit newMessage("placeholder");  // anchor for updateMessage
 
@@ -99,7 +256,27 @@ void FirmwareReaderWorker::runDfu()
 
       emit progressChanged(bytes_uploaded, total_length);
       emit updateMessage(tr("Reading %1 of %2").arg(bytes_uploaded).arg(total_length));
+
+      const auto chunk_start = data.size();
       data.append(ctx->upload(single_xfer_size));
+
+      if (stopAtErased) {
+        const auto erased = countTrailingErased(data, chunk_start);
+        if (erased == size_t(data.size() - chunk_start)) {
+          erased_length += erased;
+        } else {
+          erased_length = erased;
+        }
+
+        // the image ends where erased flash begins, no need to read the rest
+        // of the segment
+        if (erased_length >= ERASED_STOP_LENGTH) {
+          data.truncate(data.size() - erased_length);
+          emit progressChanged(total_length, total_length);
+          emit updateMessage(tr("Read %1 bytes, the rest is erased").arg(data.size()));
+          break;
+        }
+      }
     }
 
     emit statusChanged(tr("Reading finished"));
@@ -311,6 +488,16 @@ void FirmwareWriterWorker::runDfu()
 
 void FirmwareWriterWorker::writeUf2(DfuDevice &device, const SliceU8 &data)
 {
+  // The radio may already be running its EdgeTX bootloader in DFU mode, e.g.
+  // after the current firmware was read back, or when entered from the
+  // bootloader menu. That device exposes the firmware memory but not internal
+  // flash, so the reboot is not needed and the ranges before it (the
+  // bootloader) cannot be written: skip them and say so.
+  const auto layout = getUf2DfuLayout(data);
+  const bool inBootloaderDfu = layout.hasReboot && layout.hasFirmware &&
+                               deviceCovers(device, layout.firmwareAddress);
+  bool beforeReboot = true;
+
   auto range_it = UF2RangeIterator::from_slice(data);
   auto addr_range = UF2AddressRange::new_empty();
 
@@ -325,8 +512,18 @@ void FirmwareWriterWorker::writeUf2(DfuDevice &device, const SliceU8 &data)
     uint32_t reboot_address = 0;
 
     if (addr_range->reboot_address(reboot_address)) {
-      rebootAndRediscover(device, addr, payload, reboot_address, 30s);
-      erased_pages.clear();
+      if (inBootloaderDfu && beforeReboot) {
+        emit newMessage(tr("Radio is already in bootloader DFU mode, no reboot needed"));
+      } else {
+        rebootAndRediscover(device, addr, payload, reboot_address, 30s);
+        erased_pages.clear();
+      }
+      beforeReboot = false;
+    } else if (inBootloaderDfu && beforeReboot) {
+      emit warning(tr("Bootloader not updated: the radio's bootloader DFU mode "
+                      "cannot write 0x%1. To update the bootloader, flash again "
+                      "with the radio in STM32 DFU mode.")
+                       .arg(addr, 8, 16, QChar('0')));
     } else {
       writeRegion(device, addr, payload, erased_pages);
     }
@@ -405,42 +602,12 @@ void FirmwareWriterWorker::rebootAndRediscover(DfuDevice &device, uint32_t addr,
 
   emit newMessage(tr("Waiting for device to reconnect..."));
 
-  // give the old device time to drop off the bus, otherwise it may
-  // still be enumerated and be picked up instead of the rebooted one
-  QThread::msleep(REDISCOVER_INITIAL_DELAY_MS);
-
-  auto start = std::chrono::steady_clock::now();
-  bool found = false;
-
-  while (std::chrono::steady_clock::now() - start < timeout) {
-    try {
-      // enumeration may fail transiently while the device re-enumerates
-      if (device.rediscover()) {
-        found = true;
-        break;
-      }
-    } catch (const std::exception &e) {
-      qDebug() << "DFU rediscover failed, retrying:" << e.what();
-    }
-    QThread::msleep(REDISCOVER_POLL_INTERVAL_MS);
-  }
-
-  if (!found) {
+  if (!rediscoverDevice(device, timeout, [](const DfuDevice &) { return true; })) {
     throw std::runtime_error(
         tr("Timeout while reconnecting to device").toStdString());
   }
 
-  // make sure the rebooted device is ready (dfuIDLE, no error status)
-  for (int retry = 1;; retry++) {
-    try {
-      device.reset_state();
-      break;
-    } catch (const std::exception &e) {
-      if (retry >= REDISCOVER_RESET_RETRIES) throw;
-      qDebug() << "DFU reset state failed, retrying:" << e.what();
-      QThread::msleep(REDISCOVER_POLL_INTERVAL_MS);
-    }
-  }
+  resetStateWithRetry(device);
 
   emit newMessage(tr("Device reconnected"));
   emit progressChanged(2, 2);
@@ -498,6 +665,29 @@ bool readFirmware(const std::function<void(const QByteArray &)>& onComplete,
 
   // connect closures
   progress->connect(worker.get(), &FirmwareReaderWorker::complete, progress, onComplete);
+  progress->connect(worker.get(), &FirmwareReaderWorker::error, progress, onError);
+
+  // now start it!
+  worker.release()->start();
+  return true;
+}
+
+bool readFirmware(const std::function<void(const QByteArray &, bool)>& onComplete,
+                  const std::function<void(const QString &)>& onError,
+                  ProgressWidget *progress, const FirmwareReadOptions &options)
+{
+  auto worker = std::make_unique<FirmwareReaderWorker>(nullptr, options);
+  connectProgress(worker.get(), progress);
+
+  // rebootedForRead is emitted before complete from the same thread, so the
+  // flag is set by the time onComplete runs
+  auto rebooted = std::make_shared<bool>(false);
+  progress->connect(worker.get(), &FirmwareReaderWorker::rebootedForRead, progress,
+                    [rebooted]() { *rebooted = true; });
+  progress->connect(worker.get(), &FirmwareReaderWorker::complete, progress,
+                    [onComplete, rebooted](const QByteArray &data) {
+                      onComplete(data, *rebooted);
+                    });
   progress->connect(worker.get(), &FirmwareReaderWorker::error, progress, onError);
 
   // now start it!
@@ -563,6 +753,11 @@ bool writeFirmware(const QByteArray &data, ProgressWidget *progress)
 {
   auto worker = std::make_unique<FirmwareWriterWorker>(data, progress);
   connectProgress(worker.get(), progress);
+
+  progress->connect(worker.get(), &FirmwareWriterWorker::warning, progress,
+                    [progress](const QString &msg) {
+                      progress->addMessage(msg, QtWarningMsg);
+                    });
 
   // now start it!
   worker.release()->start();
@@ -786,6 +981,37 @@ bool isDfuDeviceFound()
   }
 
   return true;
+}
+
+bool getUf2FirmwareAddress(const QByteArray &uf2, uint32_t &addr)
+{
+  try {
+    SliceU8 data((const uint8_t *)uf2.constData(), uf2.size());
+    const auto layout = getUf2DfuLayout(data);
+    if (layout.hasReboot && layout.hasFirmware) {
+      addr = layout.firmwareAddress;
+      return true;
+    }
+  } catch (const std::exception &e) {
+    qDebug() << "Cannot parse UF2:" << e.what();
+  }
+
+  return false;
+}
+
+bool probeDfuAddress(uint32_t addr, bool &covered)
+{
+  try {
+    auto device_filter = DfuDeviceFilter::empty_filter();
+    auto devices = device_filter->find_devices();
+    if (devices.size() != 1) {
+      return false;
+    }
+    covered = deviceCovers(devices[0], addr);
+    return true;
+  } catch (const std::exception &e) {
+    return false;
+  }
 }
 
 bool isRadioConnected()
